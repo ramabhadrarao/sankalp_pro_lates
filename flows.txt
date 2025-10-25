@@ -1,0 +1,120 @@
+SalahkaarPro: User Flow → API Endpoints Mapping
+Complete Workflow-to-Endpoint Reference
+
+1. ADVISOR USER FLOWS
+1.1 Organic Advisor Registration → Trial Activation
+StepActionMethodEndpointPurposeRequired Data1Check email availabilityGET/api/v1/auth/check-email?email=user@example.comValidate email not takenemail (query)2Register accountPOST/api/v1/auth/registerCreate user account{user_type: "advisor", email, password, full_name, mobile, organization, role, city, terms_accepted}3Verify emailPOST/api/v1/auth/verify-emailActivate account{token} (from email)4LoginPOST/api/v1/auth/loginGet access tokens{email, password}5Activate trialPOST/api/v1/subscriptions/trial/activateStart 3-day trial-6Get dashboard dataGET/api/v1/users/dashboard-statsLoad dashboard-7Get trial statusGET/api/v1/subscriptions/trial/statusShow trial info-
+
+1.2 Affiliate Referral → Advisor Registration → Paid Subscription
+StepActionMethodEndpointPurposeRequired Data1Load affiliate landing pageGET/api/v1/affiliates/landing-page?affiliate_id=AFF_12345Get custom contentaffiliate_id (from URL)2Check email availabilityGET/api/v1/auth/check-email?email=user@example.comValidate emailemail (query)3Register with referralPOST/api/v1/auth/registerCreate account with ref{user_type: "advisor", email, password, ..., referral_code: "AFF_12345"}4Verify emailPOST/api/v1/auth/verify-emailActivate account{token}5LoginPOST/api/v1/auth/loginGet access tokens{email, password}6Get subscription tiersGET/api/v1/subscriptions/tiersShow pricing-7Subscribe to tierPOST/api/v1/subscriptions/subscribeInitiate subscription{tier_id, payment_method}8Create payment orderPOST/api/v1/payments/create-orderGenerate payment link{subscription_id, tier_id, amount}9Verify paymentPOST/api/v1/payments/verifyConfirm payment{order_id, payment_id, signature}10Select forms (if Starter+/Specialist+)POST/api/v1/subscriptions/forms/selectChoose forms{form_ids: ["term_insurance", "retirement"]}11Get my subscriptionGET/api/v1/subscriptions/my-subscriptionConfirm activation-
+
+1.3 Trial User → Paid Conversion
+StepActionMethodEndpointPurposeRequired Data1Check trial statusGET/api/v1/subscriptions/trial/statusGet remaining reports/days-2Get subscription tiersGET/api/v1/subscriptions/tiersShow pricing options-3Subscribe to tierPOST/api/v1/subscriptions/subscribeChoose paid plan{tier_id, payment_method}4Create payment orderPOST/api/v1/payments/create-orderGenerate payment{subscription_id, tier_id, amount}5Verify paymentPOST/api/v1/payments/verifyConfirm payment{order_id, payment_id, signature}6Select forms (if applicable)POST/api/v1/subscriptions/forms/selectChoose forms{form_ids[]}7Get updated subscriptionGET/api/v1/subscriptions/my-subscriptionConfirm conversion-
+
+1.4 Report Generation Flow (Complete)
+StepActionMethodEndpointPurposeRequired Data1Check report limitPOST/api/v1/subscriptions/reports/check-limitVerify can generate-2Get form schemaGET/api/v1/forms/schema/term-insuranceLoad form fields-3Load saved draft (if exists)GET/api/v1/forms/draft/term-insuranceRestore previous data-4Save draft (auto-save)POST/api/v1/forms/draft/saveBackup form data{form_type, draft_data{}}5Validate inputsPOST/api/v1/calculate/validate-inputsCheck data validity{form_type, inputs{}}6Calculate resultsPOST/api/v1/calculate/term-insuranceBackend calculation{age, income, expenses, ...}7Preview report (modal)POST/api/v1/reports/previewShow summary{form_type, calculation_results}8Submit form dataPOST/api/v1/forms/submitSave submission{form_type, client_name, form_data{}}9Generate PDFPOST/api/v1/reports/generateCreate PDF report{form_type, submission_id, language: "en"}10Deduct report countPOST/api/v1/subscriptions/reports/deductDecrement limit{user_id} (internal)11Get report detailsGET/api/v1/reports/{report_id}Fetch report data-12Download PDFGET/api/v1/reports/{report_id}/downloadDownload file-
+
+1.5 Profile Management (Within 72-Hour Grace Period)
+StepActionMethodEndpointPurposeRequired Data1Get profileGET/api/v1/users/profileLoad current profile-2Check grace periodGET/api/v1/users/grace-period-statusVerify can edit-3Update profilePUT/api/v1/users/profileSave changes{full_name, organization, role, mobile, email}4Upload photoPOST/api/v1/users/profile/photoAdd profile picturemultipart/form-data5Upload logoPOST/api/v1/users/profile/logoAdd company logomultipart/form-data6Lock profile manuallyPOST/api/v1/users/profile/lockEnd grace period-
+
+1.6 Profile Update Request (After Grace Period)
+StepActionMethodEndpointPurposeRequired Data1Get profileGET/api/v1/users/profileView locked profile-2Check grace periodGET/api/v1/users/grace-period-statusConfirm expired-3Request updatePOST/api/v1/users/profile/update-requestSubmit request{field_name: "full_name", new_value: "New Name", reason: "Typo correction"}4Check request statusGET/api/v1/users/profile/update-requestsMonitor approval-5(Wait for admin approval)----6Get updated profileGET/api/v1/users/profileView changes-
+
+1.7 Subscription Upgrade Flow
+StepActionMethodEndpointPurposeRequired Data1Get current subscriptionGET/api/v1/subscriptions/my-subscriptionView current tier-2Get all tiersGET/api/v1/subscriptions/tiersCompare options-3Initiate upgradePOST/api/v1/subscriptions/upgradeCalculate prorated cost{new_tier_id}4Create payment orderPOST/api/v1/payments/create-orderGenerate payment{subscription_id, tier_id, amount}5Verify paymentPOST/api/v1/payments/verifyConfirm payment{order_id, payment_id, signature}6Select additional forms (if applicable)POST/api/v1/subscriptions/forms/selectAdd more forms{form_ids[]}7Get updated subscriptionGET/api/v1/subscriptions/my-subscriptionConfirm upgrade-8Get dashboard statsGET/api/v1/users/dashboard-statsView new limits-
+
+1.8 Subscription Renewal Flow
+StepActionMethodEndpointPurposeRequired Data1Get current subscriptionGET/api/v1/subscriptions/my-subscriptionCheck expiry-2Get subscription tiersGET/api/v1/subscriptions/tiersView pricing-3Initiate renewalPOST/api/v1/subscriptions/renewStart renewal{tier_id} (same or different)4Create payment orderPOST/api/v1/payments/create-orderGenerate payment{subscription_id, tier_id, amount}5Verify paymentPOST/api/v1/payments/verifyConfirm payment{order_id, payment_id, signature}6Get updated subscriptionGET/api/v1/subscriptions/my-subscriptionConfirm renewal-7Get payment historyGET/api/v1/payments/my-paymentsView invoice-
+
+1.9 Refund Request Flow (Within 72 Hours)
+StepActionMethodEndpointPurposeRequired Data1Get payment historyGET/api/v1/payments/my-paymentsFind payment-2Check refund eligibilityGET/api/v1/payments/refund/eligibility?payment_id={id}Verify MBG windowpayment_id (query)3Request refundPOST/api/v1/payments/refund/requestSubmit request{payment_id, reason: "Not satisfied"}4(Wait for admin processing)----5Check payment statusGET/api/v1/payments/{payment_id}Monitor refund-
+
+1.10 Password Reset Flow
+StepActionMethodEndpointPurposeRequired Data1Request resetPOST/api/v1/auth/password-reset/requestSend reset email{email}2(User clicks email link with token)----3Confirm resetPOST/api/v1/auth/password-reset/confirmSet new password{token, new_password}4Login with new passwordPOST/api/v1/auth/loginAccess account{email, new_password}
+
+2. AFFILIATE USER FLOWS
+2.1 Affiliate Self-Application Flow
+StepActionMethodEndpointPurposeRequired Data1Check email availabilityGET/api/v1/auth/check-email?email=affiliate@example.comValidate emailemail (query)2Register as affiliatePOST/api/v1/auth/registerCreate account{user_type: "affiliate", email, password, full_name, mobile, company_name}3Verify emailPOST/api/v1/auth/verify-emailActivate account{token}4LoginPOST/api/v1/auth/loginGet access tokens{email, password}5Submit applicationPOST/api/v1/affiliates/applyApply for program{company_name, bio, why_join}6Check application statusGET/api/v1/affiliates/application-statusMonitor approval-7(Wait for admin approval)----8Get dashboard data (after approval)GET/api/v1/affiliates/dashboardLoad dashboard-
+
+2.2 Affiliate Landing Page Customization
+StepActionMethodEndpointPurposeRequired Data1Get current landing pageGET/api/v1/affiliates/landing-pageLoad existing content-2Upload photoPOST/api/v1/affiliates/landing-page/photoAdd profile photomultipart/form-data3Update contentPUT/api/v1/affiliates/landing-pageCustomize page{headline, special_offer, custom_message, cta_text}4Preview landing pageGET/api/v1/affiliates/landing-pageVerify changes-5Get referral linksGET/api/v1/affiliates/my-linksGet URLs & QR code-
+
+2.3 Affiliate Commission Tracking Flow
+StepActionMethodEndpointPurposeRequired Data1Get dashboard overviewGET/api/v1/affiliates/dashboardView summary stats-2Get referral listGET/api/v1/affiliates/referrals?page=1&status=convertedView referralsQuery params3Get referral detailsGET/api/v1/affiliates/referral/{referral_id}View specific referral-4Get commission listGET/api/v1/affiliates/commissions?status=pending_approval&page=1View earningsQuery params5Get commission detailsGET/api/v1/affiliates/commission/{commission_id}View specific commission-6Get payout historyGET/api/v1/affiliates/payoutsView paid commissions-7Get performance analyticsGET/api/v1/affiliates/performance?from=2025-01-01&to=2025-01-31View metricsDate range
+
+2.4 Affiliate Bank Account Setup
+StepActionMethodEndpointPurposeRequired Data1Get existing accountsGET/api/v1/affiliates/bank-accountsView saved accounts-2Add bank accountPOST/api/v1/affiliates/bank-accountAdd payout details{account_holder_name, bank_name, account_number, ifsc_code, account_type}3Update accountPUT/api/v1/affiliates/bank-account/{account_id}Edit details{fields to update}4Delete accountDELETE/api/v1/affiliates/bank-account/{account_id}Remove account-
+
+3. ADMIN FLOWS
+3.1 Admin Dashboard Overview
+StepActionMethodEndpointPurposeRequired Data1Login with MFAPOST/api/v1/auth/loginInitial authentication{email, password}2Verify MFA codePOST/api/v1/auth/mfa/verifyComplete MFA{code}3Get dashboard metricsGET/api/v1/admin/dashboardLoad overview-4Get overall analyticsGET/api/v1/admin/analytics/overview?from=2025-01-01&to=2025-01-31View trendsDate range5Get revenue analyticsGET/api/v1/admin/analytics/revenue?from=2025-01-01&to=2025-01-31Revenue breakdownDate range
+
+3.2 Admin: Approve Affiliate Application
+StepActionMethodEndpointPurposeRequired Data1Get pending applicationsGET/api/v1/admin/affiliates/pendingView applications-2View affiliate detailsGET/api/v1/admin/users/{user_id}/detailsReview profile-3Approve affiliatePOST/api/v1/admin/affiliates/{affiliate_id}/approveGrant access{commission_plan_id}4(System sends approval email)----5View updated affiliate listGET/api/v1/admin/users?type=affiliate&status=approvedConfirm approval-
+OR Reject:
+| 3 | Reject affiliate | POST | /api/v1/admin/affiliates/{affiliate_id}/reject | Deny access | {reason: "Insufficient information"} |
+
+3.3 Admin: Approve Commission Flow
+StepActionMethodEndpointPurposeRequired Data1Get pending commissionsGET/api/v1/admin/commissions/pending?page=1View queue-2View commission detailsGET/api/v1/affiliates/commission/{commission_id}Review transaction-3View payment detailsGET/api/v1/payments/{payment_id}Verify payment-4Approve commissionPOST/api/v1/admin/commissions/{commission_id}/approveApprove earning-5View updated commission listGET/api/v1/admin/commissions/pendingConfirm approval-
+OR Modify/Reject:
+| 4 | Modify commission | POST | /api/v1/admin/commissions/{commission_id}/modify | Change amount | {new_amount: 500, reason: "Negotiated rate"} |
+| 4 | Reject commission | POST | /api/v1/admin/commissions/{commission_id}/reject | Deny earning | {reason: "Fraudulent referral"} |
+Bulk Approval:
+| 4 | Bulk approve | POST | /api/v1/admin/commissions/bulk-approve | Approve multiple | {commission_ids: ["id1", "id2", ...]} |
+
+3.4 Admin: Process Affiliate Payout
+StepActionMethodEndpointPurposeRequired Data1Get pending payoutsGET/api/v1/admin/payouts/pendingView payout queue-2View affiliate bank accountGET/api/v1/affiliates/bank-accountsGet payout details-3Process payoutPOST/api/v1/admin/payouts/{affiliate_id}/processMark as paid{amount, payment_method: "NEFT", transaction_id: "TXN123"}4(System updates commission status to "paid")----5(System sends confirmation email to affiliate)----6View payout historyGET/api/v1/affiliates/payoutsVerify completion-
+Bulk Processing:
+| 3 | Bulk process payouts | POST | /api/v1/admin/payouts/bulk-process | Pay multiple affiliates | {affiliate_ids: ["AFF_1", "AFF_2", ...]} |
+
+3.5 Admin: User Management (Advisor)
+StepActionMethodEndpointPurposeRequired Data1Search usersGET/api/v1/admin/users?q=john&type=advisor&status=activeFind userQuery params2Get user detailsGET/api/v1/admin/users/{user_id}/detailsView full profile-3View subscriptionGET/api/v1/subscriptions/my-subscriptionCheck tier-4View payment historyGET/api/v1/payments/my-paymentsView transactions-5View report historyGET/api/v1/reports/my-reportsView usage-6Update user profilePUT/api/v1/admin/users/{user_id}/profileEdit any field{any_field: value}7Extend subscriptionPOST/api/v1/subscriptions/{user_id}/extendAdd free days{days: 30}8Add bonus reportsPOST/api/v1/subscriptions/{user_id}/add-reportsAdd reports{count: 50, reason: "Goodwill"}9Change tierPUT/api/v1/subscriptions/{user_id}/change-tierChange subscription{tier_id, reason: "Special request"}10Deactivate userPOST/api/v1/admin/users/{user_id}/deactivateSuspend account{reason: "Policy violation"}
+
+3.6 Admin: Approve Profile Update Request
+StepActionMethodEndpointPurposeRequired Data1Get pending requestsGET/api/v1/admin/profile-update-requests?status=pendingView requests-2View user profileGET/api/v1/admin/users/{user_id}/detailsReview current data-3Approve requestPOST/api/v1/admin/profile-update-requests/{request_id}/approveApply changes-4(System updates user profile)----5(System sends confirmation email)----
+OR Reject:
+| 3 | Reject request | POST | /api/v1/admin/profile-update-requests/{request_id}/reject | Deny changes | {reason: "Insufficient documentation"} |
+
+3.7 Admin: Process Refund Request
+StepActionMethodEndpointPurposeRequired Data1Get refund requestsGET/api/v1/payments/refunds?status=pendingView requests-2View payment detailsGET/api/v1/payments/{payment_id}Verify payment-3View user subscriptionGET/api/v1/subscriptions/my-subscriptionCheck eligibility-4Approve refundPOST/api/v1/payments/refund/{refund_id}/approveAuthorize refund-5Process refundPOST/api/v1/payments/refund/{refund_id}/processExecute refund{gateway_refund_id: "REFUND_123"}6(System cancels subscription)----7(System reverses affiliate commission if applicable)----
+OR Reject:
+| 4 | Reject refund | POST | /api/v1/payments/refund/{refund_id}/reject | Deny refund | {reason: "Outside 72-hour window"} |
+
+3.8 Admin: Subscription Tier Management
+StepActionMethodEndpointPurposeRequired Data1Get all tiersGET/api/v1/admin/subscription-tiersView tiers-2Update tier pricingPUT/api/v1/admin/subscription-tiers/{tier_id}Modify tier{price_original, price_launch, report_limit, features[]}3Create new tierPOST/api/v1/admin/subscription-tiersAdd tier{tier_name, display_name, price_original, price_launch, report_limit, features[]}4Deactivate tierDELETE/api/v1/admin/subscription-tiers/{tier_id}Remove tier-
+
+3.9 Admin: Commission Plan Management
+StepActionMethodEndpointPurposeRequired Data1Get all plansGET/api/v1/admin/commission-plansView plans-2Update default planPUT/api/v1/admin/commission-plans/{plan_id}Modify structure{tier_1_rate: 22, tier_2_rate: 27, ...}3Create custom planPOST/api/v1/admin/commission-plansNew plan{plan_name, tier_rates{}, renewal_rate}4Assign custom plan to affiliatePUT/api/v1/admin/affiliates/{affiliate_id}/commission-planOverride plan{plan_id, custom_rate: 35}
+
+3.10 Admin: Analytics & Reports
+StepActionMethodEndpointPurposeRequired Data1Get overview analyticsGET/api/v1/admin/analytics/overview?from=2025-01-01&to=2025-01-31High-level metricsDate range2Get revenue analyticsGET/api/v1/admin/analytics/revenue?from=2025-01-01&to=2025-01-31&breakdown=monthlyRevenue breakdownDate range, breakdown3Get affiliate performanceGET/api/v1/admin/analytics/affiliates?from=2025-01-01&to=2025-01-31Affiliate metricsDate range4Get report analyticsGET/api/v1/admin/analytics/reports?from=2025-01-01&to=2025-01-31Report usageDate range5Get conversion analyticsGET/api/v1/admin/analytics/conversions?from=2025-01-01&to=2025-01-31Funnel dataDate range6Get subscription analyticsGET/api/v1/subscriptions/analytics?from=2025-01-01&to=2025-01-31Subscription statsDate range7Get payment analyticsGET/api/v1/payments/analytics?from=2025-01-01&to=2025-01-31Payment statsDate range
+
+4. PRO USER FLOWS
+4.1 Financial Horoscope Generation (Pro Only)
+StepActionMethodEndpointPurposeRequired Data1Verify Pro subscriptionGET/api/v1/subscriptions/my-subscriptionCheck tier access-2Get form schemaGET/api/v1/forms/schema/financial-horoscopeLoad comprehensive form-3Submit comprehensive dataPOST/api/v1/forms/submitSave client data{form_type: "financial_horoscope", client_name, comprehensive_data{}}4Generate horoscopePOST/api/v1/pro/financial-horoscope/generateCalculate scores{submission_id}5Get horoscope detailsGET/api/v1/pro/financial-horoscope/{horoscope_id}View full results-6Generate PDF reportPOST/api/v1/reports/generateCreate PDF{form_type: "financial_horoscope", submission_id, language}7View clients listGET/api/v1/pro/clientsView all clients-
+
+4.2 1-on-1 Financial Planning Session (Pro Only)
+StepActionMethodEndpointPurposeRequired Data1Get client dashboardGET/api/v1/pro/client/{client_id}/dashboardLoad client data-2Get horoscope detailsGET/api/v1/pro/financial-horoscope/{horoscope_id}View client horoscope-3Create planning sessionPOST/api/v1/pro/planning-session/createStart session{client_id, horoscope_id}4Get session dataGET/api/v1/pro/planning-session/{session_id}Load session-5Update goalsPUT/api/v1/pro/planning-session/{session_id}/goalsModify goals{goals: [{goal_type, data}, ...]}6Add specific goalPOST/api/v1/pro/planning-session/{session_id}/goals/{goal_id}Add/edit goal{goal_data{}}7Remove goalDELETE/api/v1/pro/planning-session/{session_id}/goals/{goal_id}Delete goal-8Update risk managementPUT/api/v1/pro/planning-session/{session_id}/risk-managementEdit risk section{risk_data{}}9Customize pagesPUT/api/v1/pro/planning-session/{session_id}/customizePersonalize pages{page_id, custom_data{}}10Generate 1-pager summaryPOST/api/v1/pro/planning-session/{session_id}/generate-summaryCreate summary PDF-11Get all sessionsGET/api/v1/pro/planning-session/my-sessionsView session history-
+
+5. SYSTEM FLOWS
+5.1 Automated Report Cleanup (Background Job)
+StepActionMethodEndpointPurposeRequired Data1(Celery scheduled task runs daily)----2Bulk delete expired reportsPOST/api/v1/reports/bulk-deleteDelete 3+ month old{before_date: "2025-01-01"}3Cleanup expired filesPOST/api/v1/storage/cleanup-expiredDelete orphaned files-
+
+5.2 Automated Commission Calculation (Monthly Job)
+StepActionMethodEndpointPurposeRequired Data1(Celery task runs on 1st of month)----2Fetch all approved subscriptionsInternalDatabase queryGet last month's conversions-3Calculate commissionsInternalBusiness logicApply commission rates-4Create commission recordsInternalDatabase insertSave pending commissions-5Send notification to affiliatesPOST/api/v1/notifications/send-emailNotify earnings{template_key: "commission_earned"}
+
+5.3 Subscription Expiry Notification (Daily Job)
+StepActionMethodEndpointPurposeRequired Data1(Celery task runs daily)----2Find subscriptions expiring in 7 daysInternalDatabase queryGet expiring soon-3Send email notificationPOST/api/v1/notifications/send-emailRemind user{template_key: "subscription_expiring", variables: {days: 7}}4Find expired subscriptionsInternalDatabase queryGet expired today-5Update subscription statusInternalDatabase updateSet status to "expired"-6Send expiry notificationPOST/api/v1/notifications/send-emailInform expiry{template_key: "subscription_expired"}
+
+5.4 Report Limit Warning (Realtime)
+StepActionMethodEndpointPurposeRequired Data1User generates reportPOST/api/v1/reports/generateCreate report-2Deduct report countPOST/api/v1/subscriptions/reports/deductDecrement limit-3Check if 90% usedInternalBusiness logicCalculate percentage-4Send warning email (if 90%)POST/api/v1/notifications/send-emailWarn user{template_key: "report_limit_90"}5Check if 100% usedInternalBusiness logicCalculate percentage-6Update subscription statusInternalDatabase updateSet "active_no_reports"-7Send limit reached emailPOST/api/v1/notifications/send-emailNotify user{template_key: "report_limit_reached"}
+
+6. NOTIFICATION TEMPLATE MANAGEMENT (Admin)
+6.1 Email Template Management
+StepActionMethodEndpointPurposeRequired Data1Get all templatesGET/api/v1/notifications/templates?type=emailView templates-2Get specific templateGET/api/v1/notifications/template/registration_successful?language=hiView content-3Update templatePUT/api/v1/notifications/template/registration_successfulEdit content{language: "hi", subject: "...", body_html: "...", body_text: "..."}4Test emailPOST/api/v1/notifications/test-emailSend test{template_key, test_email, variables{}}5View notification queueGET/api/v1/notifications/queue?status=failedMonitor delivery-6Retry failed notificationPOST/api/v1/notifications/queue/{notification_id}/retryResend-
+
+QUICK REFERENCE: Most Common Flows
+Top 10 Most Frequent Workflows
+RankFlowPrimary EndpointsFrequency1Report Generation/calculate/*, /forms/submit, /reports/generateDaily (hundreds)2Login/auth/login, /auth/refreshDaily (thousands)3Dashboard View/users/dashboard-stats, /subscriptions/my-subscriptionDaily (thousands)4Payment Processing/payments/create-order, /payments/verifyDaily (dozens)5Trial Activation/auth/register, /auth/verify-email, /subscriptions/trial/activateDaily (dozens)6Profile Update/users/profile (GET/PUT)Weekly7Affiliate Tracking/affiliates/dashboard, /affiliates/commissionsDaily (affiliates)8Admin User Management/admin/users, /admin/users/{id}/detailsDaily (admin)9Commission Approval/admin/commissions/pending, /admin/commissions/{id}/approveWeekly (admin)10Subscription Renewal/subscriptions/renew, /payments/create-orderMonthly
+
+This comprehensive flow-to-endpoint mapping serves as the definitive reference for frontend developers, QA testers, and API consumers to understand exactly which endpoints to call in sequence for every user journey in the SalahkaarPro platform.
