@@ -1,21 +1,31 @@
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 import httpx
-from common.config import AUTH_SERVICE_URL
 
-app = FastAPI(title="SalahkaarPro API Gateway")
+from common.config import AUTH_SERVICE_URL, USER_SERVICE_URL
+
+app = FastAPI(title="API Gateway", version="1.0.0")
 
 @app.get("/health")
-def health():
+async def health():
     return {"status": "ok", "gateway": True}
 
-# Proxy for /api/v1/auth/* routes
-@app.api_route("/api/v1/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
-async def proxy_auth(path: str, request: Request):
-    target_url = f"{AUTH_SERVICE_URL}/api/v1/auth/{path}"
+async def proxy(request: Request, target_base: str, path: str):
+    url = f"{target_base}/{path}"
+    method = request.method
     headers = dict(request.headers)
+    # Remove hop-by-hop headers
     headers.pop("host", None)
 
     async with httpx.AsyncClient() as client:
-        body = await request.body()
-        resp = await client.request(request.method, target_url, headers=headers, content=body)
-    return app.response_class(content=resp.content, status_code=resp.status_code, media_type=resp.headers.get("content-type", "application/json"))
+        content = await request.body()
+        resp = await client.request(method, url, headers=headers, content=content, params=request.query_params)
+        return JSONResponse(status_code=resp.status_code, content=resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {"raw": resp.text})
+
+@app.api_route("/api/v1/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+async def proxy_auth(path: str, request: Request):
+    return await proxy(request, AUTH_SERVICE_URL, f"api/v1/{path}")
+
+@app.api_route("/api/v1/users/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+async def proxy_users(path: str, request: Request):
+    return await proxy(request, USER_SERVICE_URL, f"api/v1/{path}")

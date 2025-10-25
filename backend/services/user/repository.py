@@ -8,7 +8,9 @@ from typing import Optional
 from services.auth.models import User
 from .models import ProfileImage, ProfileUpdateRequest, ActivityLog
 
-STORAGE_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), "storage")
+# Store uploads under backend/storage/<user_id>/
+BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+STORAGE_ROOT = os.path.join(BACKEND_ROOT, "storage")
 
 os.makedirs(STORAGE_ROOT, exist_ok=True)
 
