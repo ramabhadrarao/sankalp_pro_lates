@@ -18,6 +18,8 @@ REFRESH_EXPIRES_MINUTES = int(os.getenv("REFRESH_EXPIRES_MINUTES", "43200"))  # 
 
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
 USER_SERVICE_URL = os.getenv("USER_SERVICE_URL", "http://localhost:8002")
+SUBSCRIPTION_SERVICE_URL = os.getenv("SUBSCRIPTION_SERVICE_URL", "http://localhost:8003")
+PAYMENT_SERVICE_URL = os.getenv("PAYMENT_SERVICE_URL", "http://localhost:8004")
 
 
 def mysql_url() -> str:
