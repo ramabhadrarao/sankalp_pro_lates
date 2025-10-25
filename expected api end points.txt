@@ -1,0 +1,124 @@
+SalahkaarPro: Complete API Endpoints Reference
+┌─────────────────────────────────────────────────────────────────┐
+│                        API GATEWAY (Kong/NGINX)                  │
+│         Authentication • Rate Limiting • Load Balancing          │
+└─────────────────────────────────────────────────────────────────┘
+                              ↕
+┌─────────────────────────────────────────────────────────────────┐
+│                    MICROSERVICES LAYER (Python FastAPI)          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│  │  Auth    │ │  User    │ │Subscription│ │Calculation│         │
+│  │  :8001   │ │  :8002   │ │  :8003    │ │  :8005   │          │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│  │ Payment  │ │ Report   │ │  Form    │ │ Affiliate│           │
+│  │  :8004   │ │  :8006   │ │  :8007   │ │  :8008   │           │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│  │  Admin   │ │Notification│ │ Storage │ │  i18n   │           │
+│  │  :8009   │ │  :8010    │ │  :8011  │ │  :8012   │           │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+│  ┌──────────┐                                                   │
+│  │Pro Features│                                                  │
+│  │  :8013   │                                                   │
+│  └──────────┘                                                   │
+└─────────────────────────────────────────────────────────────────┘
+                              ↕
+┌─────────────────────────────────────────────────────────────────┐
+│                       DATA LAYER                                 │
+│  ┌──────────┐      ┌──────────┐      ┌──────────┐             │
+│  │  MySQL   │      │ MongoDB  │      │  Redis   │              │
+│  │ (Primary)│      │  (Logs)  │      │ (Cache)  │              │
+│  └──────────┘      └──────────┘      └──────────┘             │
+└─────────────────────────────────────────────────────────────────┘
+API ENDPOINTS TABLE
+1. AUTH SERVICE (Port: 8001)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse1POST/api/v1/auth/registerRegister new user (advisor/affiliate)No{user_type, email, password, full_name, mobile, organization, role, city, terms_accepted}{user_id, email, verification_sent}2POST/api/v1/auth/verify-emailVerify email addressNo{token}{email, is_verified}3POST/api/v1/auth/resend-verificationResend verification emailNo{email}{message}4POST/api/v1/auth/loginUser loginNo{email, password, remember_me}{access_token, refresh_token, user}5POST/api/v1/auth/logoutUser logoutYesNone{message}6POST/api/v1/auth/refreshRefresh access tokenNo{refresh_token}{access_token, expires_in}7POST/api/v1/auth/password-reset/requestRequest password resetNo{email}{message}8POST/api/v1/auth/password-reset/confirmReset password with tokenNo{token, new_password}{message}9POST/api/v1/auth/change-passwordChange password (logged in)Yes{old_password, new_password}{message}10POST/api/v1/auth/mfa/setupSetup MFA (admin only)AdminNone{qr_code_url, secret, backup_codes}11POST/api/v1/auth/mfa/verifyVerify MFA codeYes{code}{mfa_verified}12POST/api/v1/auth/mfa/disableDisable MFAAdmin{code}{message}13GET/api/v1/auth/meGet current user infoYesNone{user_id, email, user_type, profile}14GET/api/v1/auth/check-emailCheck if email existsNoQuery: ?email={exists: boolean}
+
+2. USER SERVICE (Port: 8002)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse15GET/api/v1/users/profileGet user profileYesNone{profile_data}16PUT/api/v1/users/profileUpdate profile (allowed fields)Yes{mobile, email}{updated_profile}17POST/api/v1/users/profile/photoUpload profile photoYesmultipart/form-data{photo_url}18POST/api/v1/users/profile/logoUpload logoYesmultipart/form-data{logo_url}19DELETE/api/v1/users/profile/photoDelete profile photoYesNone{message}20DELETE/api/v1/users/profile/logoDelete logoYesNone{message}21GET/api/v1/users/grace-period-statusCheck grace period statusYesNone{in_grace_period, expires_at}22POST/api/v1/users/profile/lockManually lock profileYesNone{message}23POST/api/v1/users/profile/update-requestRequest critical field updateYes{field_name, new_value, reason}{request_id, status}24GET/api/v1/users/profile/update-requestsGet pending update requestsYesNone[{request_id, field, status}]25GET/api/v1/users/activity-logGet user activity logYesQuery: ?page=1&limit=20{activities[], pagination}26GET/api/v1/users/dashboard-statsGet dashboard statisticsYesNone{reports_used, reports_remaining, subscription_status}27GET/api/v1/users/searchSearch users (admin only)AdminQuery: ?q=&type=&status={users[], pagination}28GET/api/v1/users/{user_id}Get user by ID (admin only)AdminNone{user_data}29PUT/api/v1/users/{user_id}/profileUpdate any user profile (admin)Admin{any_field}{updated_profile}30POST/api/v1/users/{user_id}/activateActivate user account (admin)AdminNone{message}31POST/api/v1/users/{user_id}/deactivateDeactivate user account (admin)Admin{reason}{message}32GET/api/v1/users/referral-infoGet referral informationYesNone{referred_by, referral_link}
+
+3. SUBSCRIPTION SERVICE (Port: 8003)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse33GET/api/v1/subscriptions/tiersGet all subscription tiersNoNone[{tier_name, price, features}]34GET/api/v1/subscriptions/tiers/{tier_id}Get tier detailsNoNone{tier_data}35GET/api/v1/subscriptions/my-subscriptionGet current subscriptionYesNone{subscription_details}36POST/api/v1/subscriptions/trial/activateActivate free trialYesNone{trial_details, expires_at}37GET/api/v1/subscriptions/trial/statusGet trial statusYesNone{status, reports_used, expires_at}38POST/api/v1/subscriptions/subscribeSubscribe to paid tierYes{tier_id, payment_method}{subscription_id, payment_url}39POST/api/v1/subscriptions/upgradeUpgrade subscriptionYes{new_tier_id}{prorated_amount, payment_url}40POST/api/v1/subscriptions/downgradeDowngrade subscriptionYes{new_tier_id}{effective_date}41POST/api/v1/subscriptions/renewRenew subscriptionYes{tier_id}{payment_url}42POST/api/v1/subscriptions/cancelCancel subscriptionYes{reason}{cancellation_date}43PUT/api/v1/subscriptions/auto-renewToggle auto-renewYes{enabled: boolean}{auto_renew_status}44GET/api/v1/subscriptions/historyGet subscription historyYesNone[{subscription_data}]45POST/api/v1/subscriptions/forms/selectSelect forms (Starter+/Specialist+)Yes{form_ids[]}{selected_forms}46GET/api/v1/subscriptions/forms/availableGet available forms for tierYesNone{available_forms[]}47POST/api/v1/subscriptions/reports/check-limitCheck if can generate reportYesNone{can_generate, remaining}48POST/api/v1/subscriptions/reports/deductDeduct report countYes (Internal){user_id}{remaining_reports}49POST/api/v1/subscriptions/{user_id}/extendExtend subscription (admin)Admin{days}{new_end_date}50POST/api/v1/subscriptions/{user_id}/add-reportsAdd bonus reports (admin)Admin{count, reason}{new_limit}51PUT/api/v1/subscriptions/{user_id}/change-tierChange user tier (admin)Admin{tier_id, reason}{updated_subscription}52GET/api/v1/subscriptions/analyticsSubscription analytics (admin)AdminQuery: ?from=&to={stats}
+
+4. PAYMENT SERVICE (Port: 8004)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse53POST/api/v1/payments/create-orderCreate payment orderYes{subscription_id, tier_id, amount}{order_id, payment_url}54POST/api/v1/payments/verifyVerify paymentYes{order_id, payment_id, signature}{verified, transaction_id}55POST/api/v1/payments/webhook/razorpayRazorpay webhookNo (Verified)Razorpay payload{received}56POST/api/v1/payments/webhook/stripeStripe webhookNo (Verified)Stripe payload{received}57GET/api/v1/payments/my-paymentsGet payment historyYesQuery: ?page=1{payments[], pagination}58GET/api/v1/payments/{payment_id}Get payment detailsYesNone{payment_data}59GET/api/v1/payments/{payment_id}/invoiceDownload invoiceYesNonePDF file60POST/api/v1/payments/refund/requestRequest refundYes{payment_id, reason}{refund_request_id}61GET/api/v1/payments/refund/eligibilityCheck refund eligibilityYesQuery: ?payment_id={eligible, reason}62GET/api/v1/payments/refundsGet refund requests (admin)AdminQuery: ?status={refunds[]}63POST/api/v1/payments/refund/{refund_id}/approveApprove refund (admin)AdminNone{refund_id, status}64POST/api/v1/payments/refund/{refund_id}/rejectReject refund (admin)Admin{reason}{message}65POST/api/v1/payments/refund/{refund_id}/processProcess refund (admin)Admin{gateway_refund_id}{processed}66GET/api/v1/payments/analyticsPayment analytics (admin)AdminQuery: ?from=&to={revenue, transactions}67GET/api/v1/payments/failedGet failed payments (admin)AdminNone{failed_payments[]}68POST/api/v1/payments/{payment_id}/retryRetry failed paymentYesNone{payment_url}
+
+5. CALCULATION SERVICE (Port: 8005)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse69POST/api/v1/calculate/term-insuranceCalculate term insurance needsYes{age, income, expenses, dependents, existing_cover, liabilities}{recommended_cover, shortfall, monthly_premium_estimate}70POST/api/v1/calculate/health-insuranceCalculate health insurance needsYes{family_members[], city_tier, existing_policies[]}{recommended_cover, family_floater, individual_covers[]}71POST/api/v1/calculate/retirementCalculate retirement corpusYes{current_age, retirement_age, monthly_expenses, inflation_rate, existing_corpus}{required_corpus, monthly_sip_10, monthly_sip_12, monthly_sip_15}72POST/api/v1/calculate/child-educationCalculate education corpusYes{children[], education_type, years_to_goal, cost_today, inflation}{per_child_corpus[], total_required, monthly_sip_scenarios[]}73POST/api/v1/calculate/child-weddingCalculate wedding corpusYes{children[], years_to_goal, cost_today, inflation}{per_child_corpus[], total_required, monthly_sip_scenarios[]}74POST/api/v1/calculate/home-purchaseCalculate home purchase planYes{property_cost, down_payment, years_to_purchase, income_sources[], loan_tenure, interest_rate}{loan_eligibility, emi, down_payment_sip, shortfall_analysis}75POST/api/v1/calculate/car-purchaseCalculate car purchase planYes{car_cost, down_payment, years_to_purchase, income_sources[], loan_tenure, interest_rate}{loan_eligibility, emi, down_payment_sip}76POST/api/v1/calculate/vacationCalculate vacation savings planYes{vacations[{destination, travelers, date, cost}], inflation, return_rate}{per_vacation_sip[], total_monthly_investment}77POST/api/v1/calculate/tax-planningCalculate tax optimizationYes{income_heads{}, deductions_80c{}, deductions_80d{}, regime}{taxable_income, tax_liability, savings_suggestions}78GET/api/v1/calculate/cache/{calculation_id}Get cached calculationYesNone{calculation_results}79POST/api/v1/calculate/validate-inputsValidate calculation inputsYes{form_type, inputs{}}{valid: boolean, errors[]}
+
+6. REPORT SERVICE (Port: 8006)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse80POST/api/v1/reports/generateGenerate PDF reportYes{form_type, submission_id, language}{report_id, pdf_url}81GET/api/v1/reports/my-reportsGet report historyYesQuery: ?page=1&form_type={reports[], pagination}82GET/api/v1/reports/{report_id}Get report detailsYesNone{report_data}83GET/api/v1/reports/{report_id}/downloadDownload report PDFYesNonePDF file84DELETE/api/v1/reports/{report_id}Delete reportYesNone{message}85POST/api/v1/reports/{report_id}/shareShare report via emailYes{recipient_email}{message}86GET/api/v1/reports/templatesGet report templatesAdminNone{templates[]}87POST/api/v1/reports/previewPreview report (no PDF)Yes{form_type, submission_id}{summary, charts_data}88GET/api/v1/reports/statisticsGet report statisticsYesNone{total_generated, by_form_type{}}89POST/api/v1/reports/bulk-deleteBulk delete expired reportsAdmin{before_date}{deleted_count}
+
+7. FORM DATA SERVICE (Port: 8007)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse90POST/api/v1/forms/submitSubmit form dataYes{form_type, client_name, form_data{}}{submission_id, calculation_results}91GET/api/v1/forms/submissionsGet form submissionsYesQuery: ?form_type=&page=1{submissions[], pagination}92GET/api/v1/forms/submission/{submission_id}Get submission detailsYesNone{submission_data}93PUT/api/v1/forms/submission/{submission_id}Update submissionYes{form_data{}}{updated_submission}94DELETE/api/v1/forms/submission/{submission_id}Delete submissionYesNone{message}95POST/api/v1/forms/draft/saveSave form draftYes{form_type, draft_data{}}{draft_id}96GET/api/v1/forms/draft/{form_type}Get form draftYesNone{draft_data}97DELETE/api/v1/forms/draft/{form_type}Delete form draftYesNone{message}98GET/api/v1/forms/typesGet available form typesYesNone{form_types[]}99GET/api/v1/forms/schema/{form_type}Get form schema (fields)YesNone{schema}
+
+8. AFFILIATE SERVICE (Port: 8008)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse100POST/api/v1/affiliates/applyApply to become affiliateYes{company_name, bio, why_join}{application_id, status}101GET/api/v1/affiliates/application-statusCheck application statusAffiliateNone{status, review_notes}102GET/api/v1/affiliates/dashboardGet affiliate dashboard dataAffiliateNone{stats, referrals_summary}103GET/api/v1/affiliates/referralsGet referral listAffiliateQuery: ?page=1&status={referrals[], pagination}104GET/api/v1/affiliates/referral/{referral_id}Get referral detailsAffiliateNone{referral_data}105GET/api/v1/affiliates/commissionsGet commission listAffiliateQuery: ?status=&page=1{commissions[], pagination}106GET/api/v1/affiliates/commission/{commission_id}Get commission detailsAffiliateNone{commission_data}107GET/api/v1/affiliates/payoutsGet payout historyAffiliateNone{payouts[]}108GET/api/v1/affiliates/my-linksGet referral linksAffiliateNone{referral_link, landing_page_url, qr_code}109GET/api/v1/affiliates/landing-pageGet landing page dataAffiliateNone{custom_content}110PUT/api/v1/affiliates/landing-pageUpdate landing pageAffiliate{headline, offer, message, cta_text}{updated_content}111POST/api/v1/affiliates/landing-page/photoUpload landing page photoAffiliatemultipart/form-data{photo_url}112POST/api/v1/affiliates/bank-accountAdd bank accountAffiliate{account_holder, bank_name, account_number, ifsc}{account_id}113GET/api/v1/affiliates/bank-accountsGet bank accountsAffiliateNone{accounts[]}114PUT/api/v1/affiliates/bank-account/{account_id}Update bank accountAffiliate{fields}{updated_account}115DELETE/api/v1/affiliates/bank-account/{account_id}Delete bank accountAffiliateNone{message}116GET/api/v1/affiliates/marketing-assetsGet marketing assetsAffiliateNone{videos[], images[], templates[]}117GET/api/v1/affiliates/performanceGet performance analyticsAffiliateQuery: ?from=&to={conversion_rate, revenue_generated}
+
+9. ADMIN SERVICE (Port: 8009)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse118GET/api/v1/admin/dashboardGet admin dashboard dataAdminNone{key_metrics, charts}119GET/api/v1/admin/usersGet all usersAdminQuery: ?type=&status=&page=1{users[], pagination}120GET/api/v1/admin/users/{user_id}/detailsGet user full detailsAdminNone{user_data, subscription, payments, activity}121PUT/api/v1/admin/users/{user_id}/profileUpdate user profileAdmin{any_field}{updated_profile}122POST/api/v1/admin/users/{user_id}/send-notificationSend notification to userAdmin{type, message}{sent}123GET/api/v1/admin/profile-update-requestsGet profile update requestsAdminQuery: ?status={requests[]}124POST/api/v1/admin/profile-update-requests/{request_id}/approveApprove update requestAdminNone{approved}125POST/api/v1/admin/profile-update-requests/{request_id}/rejectReject update requestAdmin{reason}{rejected}126GET/api/v1/admin/affiliates/pendingGet pending affiliate applicationsAdminNone{applications[]}127POST/api/v1/admin/affiliates/{affiliate_id}/approveApprove affiliateAdmin{commission_plan_id}{approved, unique_code}128POST/api/v1/admin/affiliates/{affiliate_id}/rejectReject affiliateAdmin{reason}{rejected}129POST/api/v1/admin/affiliates/createCreate affiliate manuallyAdmin{email, name, mobile, commission_plan_id}{affiliate_id, credentials}130PUT/api/v1/admin/affiliates/{affiliate_id}/commission-planUpdate affiliate commission planAdmin{plan_id, custom_rate}{updated}131POST/api/v1/admin/affiliates/{affiliate_id}/suspendSuspend affiliateAdmin{reason}{suspended}132POST/api/v1/admin/affiliates/{affiliate_id}/reactivateReactivate affiliateAdminNone{reactivated}133GET/api/v1/admin/commissions/pendingGet pending commissionsAdminQuery: ?page=1{commissions[], pagination}134POST/api/v1/admin/commissions/{commission_id}/approveApprove commissionAdminNone{approved}135POST/api/v1/admin/commissions/{commission_id}/rejectReject commissionAdmin{reason}{rejected}136POST/api/v1/admin/commissions/{commission_id}/modifyModify commission amountAdmin{new_amount, reason}{modified}137POST/api/v1/admin/commissions/bulk-approveBulk approve commissionsAdmin{commission_ids[]}{approved_count}138GET/api/v1/admin/payouts/pendingGet pending payoutsAdminNone{payouts_by_affiliate[]}139POST/api/v1/admin/payouts/{affiliate_id}/processProcess affiliate payoutAdmin{amount, payment_method, transaction_id}{payout_id}140POST/api/v1/admin/payouts/bulk-processBulk process payoutsAdmin{affiliate_ids[]}{processed_count}141GET/api/v1/admin/subscription-tiersGet all tiers (for editing)AdminNone{tiers[]}142PUT/api/v1/admin/subscription-tiers/{tier_id}Update tier configurationAdmin{price, features[], report_limit}{updated_tier}143POST/api/v1/admin/subscription-tiersCreate new tierAdmin{tier_data}{tier_id}144DELETE/api/v1/admin/subscription-tiers/{tier_id}Deactivate tierAdminNone{deactivated}145GET/api/v1/admin/commission-plansGet all commission plansAdminNone{plans[]}146POST/api/v1/admin/commission-plansCreate commission planAdmin{plan_data}{plan_id}147PUT/api/v1/admin/commission-plans/{plan_id}Update commission planAdmin{plan_data}{updated_plan}148GET/api/v1/admin/analytics/overviewGet overall analyticsAdminQuery: ?from=&to={revenue, users, reports, conversions}149GET/api/v1/admin/analytics/revenueGet revenue analyticsAdminQuery: ?from=&to=&breakdown={revenue_data, charts}150GET/api/v1/admin/analytics/affiliatesGet affiliate performanceAdminQuery: ?from=&to={top_affiliates[], metrics}151GET/api/v1/admin/analytics/reportsGet report generation analyticsAdminQuery: ?from=&to={by_form_type, by_tier}152GET/api/v1/admin/analytics/conversionsGet conversion analyticsAdminQuery: ?from=&to={trial_to_paid, funnel_data}153GET/api/v1/admin/audit-logsGet audit logsAdminQuery: ?user_id=&action=&page=1{logs[], pagination}154GET/api/v1/admin/system-configGet system configurationAdminNone{configs{}}155PUT/api/v1/admin/system-configUpdate system configAdmin{key, value}{updated}156GET/api/v1/admin/feature-flagsGet feature flagsAdminNone{flags[]}157PUT/api/v1/admin/feature-flags/{flag_key}Toggle feature flagAdmin{enabled: boolean}{updated}
+
+10. NOTIFICATION SERVICE (Port: 8010)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse158POST/api/v1/notifications/send-emailSend email (internal)Internal{to, template_key, variables{}, language}{sent, notification_id}159POST/api/v1/notifications/send-smsSend SMS (internal)Internal{to, message, language}{sent, notification_id}160GET/api/v1/notifications/templatesGet all templatesAdminQuery: ?type=&language={templates[]}161GET/api/v1/notifications/template/{template_key}Get templateAdminQuery: ?language={template_data}162PUT/api/v1/notifications/template/{template_key}Update templateAdmin{subject, body_text, body_html}{updated}163POST/api/v1/notifications/test-emailTest email templateAdmin{template_key, test_email, variables{}}{sent}164GET/api/v1/notifications/queueGet notification queueAdminQuery: ?status={queue[], pagination}165POST/api/v1/notifications/queue/{notification_id}/retryRetry failed notificationAdminNone{retried}166GET/api/v1/notifications/my-notificationsGet user notificationsYesQuery: ?page=1{notifications[], pagination}167PUT/api/v1/notifications/{notification_id}/readMark as readYesNone{updated}168GET/api/v1/notifications/preferencesGet notification preferencesYesNone{email_enabled, sms_enabled}169PUT/api/v1/notifications/preferencesUpdate preferencesYes{email_enabled, sms_enabled}{updated}
+
+11. STORAGE SERVICE (Port: 8011)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse170POST/api/v1/storage/uploadUpload fileYesmultipart/form-data{file_id, url}171GET/api/v1/storage/file/{file_id}Get file URLYesNone{url, expires_in}172GET/api/v1/storage/download/{file_id}Download fileYesNoneFile stream173DELETE/api/v1/storage/file/{file_id}Delete fileYesNone{deleted}174POST/api/v1/storage/generate-presigned-urlGenerate presigned upload URLYes{filename, file_type}{upload_url, file_id}175GET/api/v1/storage/my-filesGet user filesYesQuery: ?type=&page=1{files[], pagination}176POST/api/v1/storage/cleanup-expiredCleanup expired files (internal)InternalNone{deleted_count}
+
+12. I18N SERVICE (Port: 8012)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse177GET/api/v1/i18n/languagesGet supported languagesNoNone{languages[]}178GET/api/v1/i18n/translations/{language}Get all translations for languageNoQuery: ?module={translations{}}179GET/api/v1/i18n/translateTranslate keyNoQuery: ?key=&lang={translation}180POST/api/v1/i18n/translationsAdd/Update translation (admin)Admin{key, language, value, module}{updated}181DELETE/api/v1/i18n/translations/{key}Delete translation (admin)AdminQuery: ?language={deleted}182POST/api/v1/i18n/languagesAdd new language (admin)Admin{language_code, name, native_name}{language_id}183PUT/api/v1/i18n/languages/{language_code}Update language (admin)Admin{is_active, display_order}{updated}184GET/api/v1/i18n/missing-translationsGet missing translations (admin)AdminQuery: ?language={missing_keys[]}185POST/api/v1/i18n/exportExport translations (admin)Admin{language, format}JSON/CSV file186POST/api/v1/i18n/importImport translations (admin)Adminmultipart/form-data{imported_count}
+
+13. PRO TIER FEATURES SERVICE (Port: 8013)
+#MethodEndpointPurposeAuth RequiredRequest BodyResponse187POST/api/v1/pro/financial-horoscope/generateGenerate financial horoscopePro{comprehensive_financial_data}{horoscope_id, scores{}, top_5_actions[]}188GET/api/v1/pro/financial-horoscope/{horoscope_id}Get horoscope detailsProNone{horoscope_data}189GET/api/v1/pro/financial-horoscope/my-horoscopesGet user's horoscopesProNone{horoscopes[]}190POST/api/v1/pro/planning-session/createCreate 1-on-1 planning sessionPro{client_id, horoscope_id}{session_id}191GET/api/v1/pro/planning-session/{session_id}Get session dataProNone{session_data, goals[], risk_data}192PUT/api/v1/pro/planning-session/{session_id}/goalsUpdate session goalsPro{goals[]}{updated_goals}193POST/api/v1/pro/planning-session/{session_id}/goals/{goal_id}Add/update specific goalPro{goal_data}{goal_id}194DELETE/api/v1/pro/planning-session/{session_id}/goals/{goal_id}Remove goalProNone{deleted}195PUT/api/v1/pro/planning-session/{session_id}/risk-managementUpdate risk managementPro{risk_data}{updated}196PUT/api/v1/pro/planning-session/{session_id}/customizeCustomize session pagesPro{page_id, custom_data}{updated}197POST/api/v1/pro/planning-session/{session_id}/generate-summaryGenerate 1-pager summaryProNone{summary_pdf_url}198GET/api/v1/pro/planning-session/my-sessionsGet all planning sessionsProNone{sessions[]}199GET/api/v1/pro/clientsGet clients (from horoscopes)ProNone{clients[]}200GET/api/v1/pro/client/{client_id}/dashboardGet client dashboardProNone{horoscope, sessions[], reports[]}
+
+SUMMARY TABLE
+ServiceTotal EndpointsPublicAuthenticatedAdmin OnlyInternalAuth Service1410310User Service1801530Subscription Service2021440Payment Service162950Calculation Service1101100Report Service100820Form Data Service1001000Affiliate Service1801800Admin Service4000400Notification Service120363Storage Service70502I18n Service103070Pro Features Service1401400TOTAL20017110685
+
+API CONVENTIONS
+Response Format
+json// Success Response
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": { ... }
+}
+
+// Error Response
+{
+  "success": false,
+  "message": "Error description",
+  "errors": {
+    "field_name": "Error detail"
+  }
+}
+
+// Paginated Response
+{
+  "success": true,
+  "message": "Data retrieved",
+  "data": [ ... ],
+  "pagination": {
+    "total": 100,
+    "page": 1,
+    "page_size": 20,
+    "total_pages": 5
+  }
+}
+```
+
+### **Authentication Header**
+```
+Authorization: Bearer <access_token>
+```
+
+### **Language Header**
+```
+Accept-Language: en|hi|mr|gu|ta|te|kn|ml
+```
+
+### **Rate Limiting**
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1640000000
+This comprehensive API structure provides complete backend functionality for the SalahkaarPro platform with 200 well-defined endpoints across 13 microservices.
