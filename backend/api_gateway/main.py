@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request
 import httpx
-import os
 from common.config import AUTH_SERVICE_URL
 
 app = FastAPI(title="SalahkaarPro API Gateway")
@@ -9,12 +8,11 @@ app = FastAPI(title="SalahkaarPro API Gateway")
 def health():
     return {"status": "ok", "gateway": True}
 
-# Simple proxy for auth routes (expand to other services as they are added)
-@app.api_route("/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+# Proxy for /api/v1/auth/* routes
+@app.api_route("/api/v1/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_auth(path: str, request: Request):
-    target_url = f"{AUTH_SERVICE_URL}/auth/{path}"
+    target_url = f"{AUTH_SERVICE_URL}/api/v1/auth/{path}"
     headers = dict(request.headers)
-    # Remove host header to avoid mismatch errors
     headers.pop("host", None)
 
     async with httpx.AsyncClient() as client:
