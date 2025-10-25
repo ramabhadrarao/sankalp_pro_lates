@@ -1,0 +1,4266 @@
+SalahkaarPro: Comprehensive Project Overview
+Project Purpose
+SalahkaarPro is a B2B SaaS platform designed to empower financial advisors in India by enabling them to generate professional, branded financial planning reports for their clients. The platform transforms complex financial calculations into visually appealing, actionable reports that help advisors demonstrate value and drive client engagement.
+
+Core Problem It Solves
+Financial advisors need to:
+
+Quickly assess clients' financial health across multiple dimensions
+Generate professional reports without manual calculations
+Demonstrate expertise through data-driven recommendations
+Convert consultations into actionable plans
+
+SalahkaarPro automates the calculation-heavy work while maintaining advisor control and brand identity.
+
+Project Structure & Architecture
+1. Multi-Tier Subscription Model
+The platform operates on a 7-tier annual subscription system:
+TierPriceReportsKey FeaturesBasic₹1,999501 core form, basic brandingStarter₹3,4991001 core form, basic brandingStarter+₹4,4991502 core forms + tax planningSpecialist₹5,9992002 core forms + tax planningSpecialist+₹7,9992503 core forms + tax planningPro₹12,4991,000All forms + Financial Horoscope + 1-on-1 interfaceEnterpriseCustomUnlimitedWhite-label, team management
+Strategic Design:
+
+Lower tiers for specialists (e.g., insurance-only advisors)
+Pro tier for holistic financial planners
+Clear upgrade path as business grows
+
+
+2. Core Financial Planning Forms
+The platform includes 8 specialized calculation engines:
+Core Forms (Tier-Dependent Access)
+
+Term Insurance Calculator - Gap analysis, coverage recommendations
+Health Insurance Planner - Family coverage, inflation-adjusted needs
+Retirement Planning - Corpus calculation, SIP scenarios (10%, 12%, 15% returns)
+Child Education Planning - Multi-child support, goal-based projections
+Child Wedding Planning - Future value calculations with inflation
+Home Purchase Planner - Down payment SIP, loan eligibility (income × multiplier)
+Car Purchase Planner - EMI affordability, loan gap analysis
+Vacation/World Tour Planner - Sequential accumulation, date-based savings windows
+
+Bonus Form (Tiers Starter+ and above)
+
+Smart Tax Planning (FY 2025-26) - Frontend-only calculations, unlimited downloads, doesn't count toward report allowance
+
+Pro-Exclusive Features
+
+Financial Horoscope - Comprehensive financial health assessment
+1-on-1 Financial Planning Interface - Interactive goal and risk management tool
+1-Pager Summary - Executive summary for client sessions
+
+
+3. Technical Architecture
+┌─────────────────────────────────────────────────────────────┐
+│                    FRONTEND LAYER                            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │  Landing Page │  │ User Dashboard│  │ Form Interface│      │
+│  │  (Marketing)  │  │  (Reports)    │  │  (8 Forms)    │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└─────────────────────────────────────────────────────────────┘
+                              ↕
+┌─────────────────────────────────────────────────────────────┐
+│                     API GATEWAY                              │
+│     • Authentication (JWT tokens)                            │
+│     • Rate Limiting                                          │
+│     • Request Validation                                     │
+└─────────────────────────────────────────────────────────────┘
+                              ↕
+┌─────────────────────────────────────────────────────────────┐
+│                  BUSINESS LOGIC LAYER                        │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  CALCULATION ENGINES (Backend Only - Security)       │   │
+│  │  • Insurance needs analysis                          │   │
+│  │  • Future value projections                          │   │
+│  │  • Loan eligibility (FOIR-based)                     │   │
+│  │  • SIP calculations (multiple return scenarios)      │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                                                               │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  SUBSCRIPTION MANAGEMENT                             │   │
+│  │  • Tier validation                                   │   │
+│  │  • Report count tracking                             │   │
+│  │  • Renewal/upgrade triggers                          │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                                                               │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  REPORT GENERATION                                   │   │
+│  │  • PDF rendering with advisor branding               │   │
+│  │  • Executive summary generation                      │   │
+│  │  • Visual charts/graphs                              │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              ↕
+┌─────────────────────────────────────────────────────────────┐
+│                    DATABASE LAYER                            │
+│  • User Accounts (Advisors, Affiliates, Admins)             │
+│  • Subscription Data (Tier, Usage, Expiry)                   │
+│  • Generated Reports (3-month retention)                     │
+│  • Transaction History (Payments, Refunds)                   │
+│  • Encrypted at Rest (Sensitive data protection)            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### **4. User Roles & Access Control**
+
+#### **A. Financial Advisors (Primary Users)**
+
+**Registration Requirements:**
+- Name, Email, Mobile, Organization, Role
+- Email verification mandatory
+- Optional: Advisor Photo & Logo (displayed only on Pro tier reports)
+
+**Self-Service Capabilities:**
+- Update contact info (mobile, email)
+- Upload/manage photo and logo
+- View report history (3-month retention)
+- Generate reports (within tier limits)
+
+**Tier-Based Restrictions:**
+- **Basic/Starter/Starter+/Specialist/Specialist+:** Reports show name, role, contact only
+- **Pro:** Full branding with photo and logo
+
+**Security Measures:**
+- 72-hour grace period to correct name/organization/role after registration
+- Afterwards, these fields are locked (requires email request to support)
+- **Critical Security Rationale:** Prevents single Pro user from generating reports for multiple advisors (revenue protection)
+
+---
+
+#### **B. Master Admin (Internal Operations)**
+
+**Authentication:**
+- Multi-factor authentication (MFA) required
+- Separate secure backend interface
+
+**Capabilities:**
+- **User Management:** Add/delete users, modify profiles, search accounts
+- **Subscription Management:** Change tiers, extend periods, cancel accounts
+- **Refund Processing:** Handle money-back guarantee requests
+- **Dynamic Pricing:** Modify tier prices, report allowances, features without developer intervention
+- **Affiliate Management:** Set custom commission rates, manage landing pages
+- **Analytics Dashboard:** Total reports, sign-ups by channel, revenue tracking
+
+**Audit Trail:**
+- All changes logged (who, what, when)
+
+---
+
+#### **C. Affiliate Partners**
+
+**Onboarding:**
+- Provided with unique referral link: `salahkaarpro.com/partners/[partner-id]`
+- Dynamic landing page auto-generated with their branding
+
+**Dashboard Features:**
+- Performance metrics (referrals, conversions, commissions)
+- Detailed referral list (advisor name, tier, payment status)
+- Commission payout history
+- Marketing assets (videos, demo accounts)
+
+**Commission Structure:**
+
+| Monthly Revenue | Commission Rate | Renewal Commission |
+|-----------------|-----------------|-------------------|
+| ₹0 - ₹1,00,000 | 20% | 10% (lifetime) |
+| ₹1,00,001 - ₹2,00,000 | 25% | 10% (lifetime) |
+| ₹2,00,001 - ₹4,00,000 | 30% | 10% (lifetime) |
+| Above ₹4,00,001 | 40% | 10% (lifetime) |
+
+**Payout:** Monthly, within 7-10 business days
+
+---
+
+### **5. Acquisition & Conversion Workflows**
+
+#### **Organic User Journey**
+```
+Landing Page → "Book Free 3-Day Trial" CTA 
+    ↓
+Email Verification
+    ↓
+Trial Account (Starter Tier, 5 reports, 3 days)
+    ↓
+Trial Expires → Conversion Prompt
+    ↓
+Select Paid Tier → Payment → Full Access
+```
+
+**Money-Back Guarantee:**
+- 72-hour MBG for direct purchases (no trial)
+- 72-hour MBG for affiliate referrals
+- **No MBG** for trial conversions (trial already provided)
+
+---
+
+#### **Affiliate User Journey**
+```
+Click Affiliate Link (with ref_id)
+    ↓
+Custom Landing Page (dynamic branding)
+    ↓
+View Pricing → Select Tier → Payment
+    ↓
+Account Created → Affiliate Credited
+```
+
+**Tracking:**
+- Affiliate ID captured in URL
+- Commission calculated automatically
+- Lifetime renewal tracking
+
+---
+
+### **6. Report Generation Workflow**
+
+#### **User Experience Flow**
+```
+1. Advisor selects form (e.g., Term Insurance)
+    ↓
+2. Frontend collects client data
+    ↓
+3. Backend performs calculations (all logic server-side)
+    ↓
+4. Modal displays summary:
+   - Existing coverage
+   - Recommended coverage
+   - Shortfall
+    ↓
+5. Advisor reviews → Confirms PDF generation
+    ↓
+6. Report generated:
+   - Executive summary (top 3 actions)
+   - Visual graphs/charts
+   - Goal scenarios (10%, 12%, 15% returns)
+   - Context-sensitive CTAs
+   - Final CTA: "Book 1-on-1 Session"
+    ↓
+7. Report count deducted from allowance
+    ↓
+8. PDF stored (3-month retention)
+```
+
+#### **Security Principle**
+**All calculations happen on the backend** to prevent:
+- Reverse engineering of proprietary formulas
+- Client-side manipulation of results
+- Intellectual property theft
+
+---
+
+### **7. Key Technical Features**
+
+#### **Income Source Weighting System**
+The platform uses sophisticated income assessment (seen in Home/Car Purchase forms):
+
+| Income Type | Weight | Rationale |
+|-------------|--------|-----------|
+| Salaried | 100% | Most stable |
+| Business | 80% | Variable income |
+| Self-employed | 80% | Variable income |
+| Rental | 70% | Semi-passive |
+| Agricultural | 50% | Seasonal/uncertain |
+| Other | 50% | Miscellaneous |
+
+**Loan Eligibility Calculations:**
+- **Home Loan:** Weighted Monthly Income × 60 (5× annual weighted income)
+- **Car Loan:** Weighted Monthly Income × 24 (2× annual weighted income)
+- **FOIR (Fixed Obligation to Income Ratio):** 
+  - Home: 50%
+  - Car: 40%
+
+---
+
+#### **Sequential Accumulation Logic (Vacation Planner)**
+Unique feature for multi-goal planning:
+- **First vacation:** Savings window = current month → vacation date
+- **Subsequent vacations:** Savings window = previous vacation date → this vacation date
+- Inflation always calculated from current month to goal date
+- Enables realistic planning for multiple trips over years
+
+---
+
+### **8. Pro Tier: 1-on-1 Financial Planning Interface**
+
+**Workflow:**
+```
+1. Client completes Financial Horoscope form
+    ↓
+2. Advisor's dashboard shows two options:
+   - "Generate Report" (standard PDF)
+   - "Financial Planning" (interactive session)
+    ↓
+3. Interactive interface opens:
+   - All client goals pre-loaded
+   - Advisor can add/remove goals
+   - Dedicated risk management section
+   - Customizable pages for each goal
+    ↓
+4. Session concludes → 1-Pager Summary generated:
+   - Top actions
+   - Next steps
+   - Guidelines
+Business Value:
+
+Transforms advisor from report generator to strategic planner
+Justifies premium Pro pricing
+Creates stickiness (high switching cost for advisor)
+
+
+9. Future-Proof Architecture
+White-Label Model (Planned)
+
+Dynamic branding system (logos, colors stored as database variables)
+Partner-specific front-end rendering
+Prevents hard-coded brand elements
+
+Channel Partner Model (Planned)
+
+Hierarchical user roles (Channel Partner → Sub-Advisors)
+Aggregated analytics dashboard
+Sub-account management interface
+Data isolation between partners
+
+Mobile App Readiness
+
+RESTful API architecture
+Platform-agnostic backend
+Microservices design for scalability
+
+
+10. Security & Compliance
+Data Protection
+
+In Transit: HTTPS/SSL encryption
+At Rest: Database-level encryption
+Password Policy: Hashed & salted, complexity requirements
+Account Lockout: After 5 failed login attempts
+
+Legal Compliance
+
+Terms & Conditions acceptance at registration
+Privacy Policy consent
+Refund Policy acknowledgment
+Email verification mandatory
+
+Audit & Accountability
+
+Complete activity logging
+Admin action audit trail
+Payment transaction history
+Automated backup to off-site location
+
+
+Business Model Summary
+Revenue Streams
+
+Recurring Subscriptions: 7 tiers × annual renewals
+Upsells: Starter → Specialist → Pro progression
+Enterprise Custom Deals: White-label partnerships
+
+Cost Structure
+
+Report generation compute costs
+3-month storage retention (controlled cost)
+Payment gateway fees (factored into pricing)
+Affiliate commissions (variable, revenue-linked)
+
+Key Metrics to Track
+
+Customer Acquisition Cost (CAC) by channel
+Lifetime Value (LTV) by tier
+Churn rate per tier
+Upgrade conversion rate
+Affiliate program ROI
+
+
+Unique Selling Propositions
+
+Backend Calculations: Security through server-side logic (not JavaScript)
+Advisor Control: Modal review before report generation (prevents accidental usage)
+Tiered Access: Clear feature differentiation justifies pricing
+Visual Reports: Professional PDFs with charts, not just numbers
+Action-Oriented: Context-sensitive CTAs turn insights into client actions
+Pro Suite: Elevates advisors to strategic planners, not just report generators
+
+
+Critical Design Decisions
+Why 3-Month Report Retention?
+
+Balances user convenience with storage costs
+Encourages advisors to maintain their own archives
+Reduces long-term data liability
+
+Why Backend-Only Calculations?
+
+Protects proprietary financial formulas
+Prevents client-side manipulation
+Maintains calculation integrity across all users
+
+Why Lock Name/Organization Fields?
+
+Revenue Protection: Prevents single Pro user from creating reports for multiple advisors
+Enforces subscription integrity
+Creates barrier to account sharing
+
+Why 72-Hour Grace Period?
+
+Allows legitimate typo corrections
+Balances user convenience with security
+Sets clear boundary for profile changes
+
+
+This architecture creates a scalable, secure, and strategically designed platform that serves financial advisors while protecting business integrity and enabling future growth into white-label and enterprise markets.RetryRBok good, give module wise backend and frontend what to implement ( python as backend , react as frontend) -- plugn -play model / microservices like - multilingual in everyphaseArchitected modular microservices strategy for multilingual SalahkaarPro platform.The user wants a modular, plugin-play/microservices architecture for SalahkaarPro with:
+
+Backend: Python
+Frontend: React
+Multilingual support at every phase
+Clear separation of concerns
+
+I'll structure this as a comprehensive microservices architecture with:
+
+Backend services (Python-based)
+Frontend modules (React-based)
+Shared infrastructure
+Multilingual implementation strategy
+
+Let me organize this by:
+
+Core services (microservices)
+API Gateway
+Frontend modules
+Database schema
+Internationalization (i18n) strategy
+Communication patterns
+Deployment considerations
+SalahkaarPro: Modular Microservices Architecture
+Architecture Overview
+┌─────────────────────────────────────────────────────────────────┐
+│                        API GATEWAY                               │
+│         (Kong / NGINX / AWS API Gateway)                         │
+│  • Authentication • Rate Limiting • Routing • Load Balancing     │
+└─────────────────────────────────────────────────────────────────┘
+                              ↕
+┌─────────────────────────────────────────────────────────────────┐
+│                    MICROSERVICES LAYER (Python)                  │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│  │  Auth    │ │  User    │ │Subscription│ │ Calculation│         │
+│  │  Service │ │  Service │ │  Service  │ │  Engine   │          │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│  │ Report   │ │ Payment  │ │ Affiliate │ │  Email   │           │
+│  │ Service  │ │ Service  │ │  Service  │ │  Service │           │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│  │  i18n    │ │ Analytics│ │  Admin   │ │ Storage  │           │
+│  │ Service  │ │ Service  │ │  Service │ │ Service  │           │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+└─────────────────────────────────────────────────────────────────┘
+                              ↕
+┌─────────────────────────────────────────────────────────────────┐
+│                       FRONTEND (React)                           │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│  │ Landing  │ │  Auth    │ │Dashboard │ │ Form     │           │
+│  │  Module  │ │  Module  │ │  Module  │ │ Modules  │           │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│  │ Report   │ │ Affiliate│ │  Admin   │ │  i18n    │           │
+│  │  Viewer  │ │ Dashboard│ │  Panel   │ │  Provider│           │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+└─────────────────────────────────────────────────────────────────┘
+
+BACKEND MICROSERVICES (Python)
+1. Authentication Service
+Technology: FastAPI + JWT + Redis
+python# Structure
+authentication-service/
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── v1/
+│   │   │   ├── endpoints/
+│   │   │   │   ├── login.py
+│   │   │   │   ├── register.py
+│   │   │   │   ├── refresh.py
+│   │   │   │   ├── logout.py
+│   │   │   │   ├── password_reset.py
+│   │   │   │   └── mfa.py
+│   ├── core/
+│   │   ├── config.py
+│   │   ├── security.py  # JWT, hashing, MFA
+│   │   └── dependencies.py
+│   ├── models/
+│   │   └── auth.py
+│   ├── schemas/
+│   │   └── auth.py
+│   ├── services/
+│   │   ├── auth_service.py
+│   │   ├── token_service.py
+│   │   └── mfa_service.py
+│   ├── utils/
+│   │   └── validators.py
+│   └── i18n/
+│       ├── translations/
+│       │   ├── en.json
+│       │   ├── hi.json
+│       │   └── mr.json
+│       └── translator.py
+├── tests/
+├── Dockerfile
+├── requirements.txt
+└── README.md
+Key Responsibilities:
+
+User authentication (login, register)
+JWT token generation/validation
+MFA for admin accounts
+Password reset flow
+Session management
+Account lockout (5 failed attempts)
+Email verification
+
+Multilingual Support:
+python# i18n/translator.py
+from typing import Dict
+import json
+
+class Translator:
+    def __init__(self, default_lang='en'):
+        self.default_lang = default_lang
+        self.translations = {}
+        self.load_translations()
+    
+    def load_translations(self):
+        languages = ['en', 'hi', 'mr', 'gu', 'ta', 'te', 'kn', 'ml']
+        for lang in languages:
+            with open(f'i18n/translations/{lang}.json', 'r', encoding='utf-8') as f:
+                self.translations[lang] = json.load(f)
+    
+    def translate(self, key: str, lang: str = None) -> str:
+        lang = lang or self.default_lang
+        return self.translations.get(lang, {}).get(key, 
+               self.translations[self.default_lang].get(key, key))
+
+# Usage in endpoints
+@router.post("/register")
+async def register(
+    user_data: UserRegister,
+    lang: str = Header(default='en', alias='Accept-Language')
+):
+    translator = Translator()
+    try:
+        # Registration logic
+        return {
+            "message": translator.translate("registration_successful", lang)
+        }
+    except Exception as e:
+        return {
+            "error": translator.translate("registration_failed", lang)
+        }
+Example Translation File (hi.json):
+json{
+  "registration_successful": "पंजीकरण सफल रहा",
+  "registration_failed": "पंजीकरण विफल रहा",
+  "invalid_credentials": "अमान्य क्रेडेंशियल",
+  "email_verification_sent": "ईमेल सत्यापन भेजा गया",
+  "password_reset_link_sent": "पासवर्ड रीसेट लिंक भेजा गया"
+}
+
+2. User Service
+Technology: FastAPI + SQLAlchemy + PostgreSQL
+python# Structure
+user-service/
+├── app/
+│   ├── main.py
+│   ├── api/
+│   │   └── v1/
+│   │       ├── users.py
+│   │       ├── profile.py
+│   │       └── advisors.py
+│   ├── models/
+│   │   ├── user.py
+│   │   ├── advisor_profile.py
+│   │   └── affiliate_profile.py
+│   ├── schemas/
+│   │   └── user.py
+│   ├── services/
+│   │   ├── user_service.py
+│   │   └── profile_service.py
+│   ├── db/
+│   │   ├── session.py
+│   │   └── base.py
+│   └── i18n/
+│       ├── translations/
+│       └── translator.py
+├── alembic/  # Database migrations
+├── tests/
+├── Dockerfile
+└── requirements.txt
+Key Responsibilities:
+
+User CRUD operations
+Advisor profile management (name, org, role)
+Photo/logo upload (stored as references, actual files in Storage Service)
+72-hour grace period logic for profile updates
+Field locking after grace period
+User search (for admin)
+
+Database Models:
+python# models/advisor_profile.py
+from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
+from datetime import datetime, timedelta
+
+class AdvisorProfile(Base):
+    __tablename__ = "advisor_profiles"
+    
+    id = Column(String, primary_key=True)
+    user_id = Column(String, ForeignKey('users.id'))
+    full_name = Column(String, nullable=False)
+    organization = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    mobile = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    city = Column(String)
+    
+    # Branding assets
+    photo_url = Column(String, nullable=True)
+    logo_url = Column(String, nullable=True)
+    
+    # Grace period tracking
+    created_at = Column(DateTime, default=datetime.utcnow)
+    profile_locked_at = Column(DateTime, nullable=True)
+    is_profile_locked = Column(Boolean, default=False)
+    
+    # Tier info (denormalized for quick access)
+    subscription_tier = Column(String)
+    
+    user = relationship("User", back_populates="advisor_profile")
+    
+    @property
+    def in_grace_period(self):
+        """Check if profile is still in 72-hour grace period"""
+        if self.profile_locked_at:
+            return False
+        grace_period_end = self.created_at + timedelta(hours=72)
+        return datetime.utcnow() < grace_period_end
+    
+    def lock_profile(self):
+        """Lock profile after grace period or manual confirmation"""
+        self.is_profile_locked = True
+        self.profile_locked_at = datetime.utcnow()
+Multilingual Implementation:
+python# services/profile_service.py
+class ProfileService:
+    def __init__(self, db, translator):
+        self.db = db
+        self.translator = translator
+    
+    async def update_profile(self, user_id: str, updates: dict, lang: str):
+        profile = self.db.query(AdvisorProfile).filter_by(user_id=user_id).first()
+        
+        # Check if critical fields are being updated
+        critical_fields = ['full_name', 'organization', 'role']
+        updating_critical = any(field in updates for field in critical_fields)
+        
+        if updating_critical and profile.is_profile_locked:
+            raise HTTPException(
+                status_code=403,
+                detail=self.translator.translate("profile_locked_error", lang)
+            )
+        
+        if updating_critical and not profile.in_grace_period:
+            raise HTTPException(
+                status_code=403,
+                detail=self.translator.translate("grace_period_expired", lang)
+            )
+        
+        # Proceed with update
+        for key, value in updates.items():
+            setattr(profile, key, value)
+        
+        self.db.commit()
+        return {
+            "message": self.translator.translate("profile_updated", lang),
+            "profile": profile
+        }
+
+3. Subscription Service
+Technology: FastAPI + SQLAlchemy + Redis (for caching)
+python# Structure
+subscription-service/
+├── app/
+│   ├── main.py
+│   ├── api/
+│   │   └── v1/
+│   │       ├── subscriptions.py
+│   │       ├──RetryRBi dontwant code table give phase wise module wise what to implementMapped out modular implementation strategy for SalahkaarPro project.The user wants a high-level, phase-wise breakdown of what to implement module by module, without code. They want a structured implementation plan for the entire SalahkaarPro project with backend (Python) and frontend (React) in a microservices architecture with multilingual support.
+Let me organize this into phases with clear module breakdowns for both backend and frontend.SalahkaarPro: Phase-wise Implementation Plan
+PHASE 1: FOUNDATION & CORE INFRASTRUCTURE (Weeks 1-4)
+Backend Modules
+1.1 API Gateway Setup
+
+Configure Kong/NGINX as API Gateway
+Set up routing rules for all microservices
+Implement rate limiting
+Configure CORS policies
+Set up SSL/TLS certificates
+Health check endpoints for all services
+
+1.2 Authentication Service
+What to Implement:
+
+User registration with email verification
+Login/Logout endpoints
+JWT token generation and validation
+Refresh token mechanism
+Password reset flow (email-based)
+Account lockout after 5 failed attempts
+Session management with Redis
+MFA setup for admin accounts
+i18n support for all error messages and responses
+
+Database Tables:
+
+users (id, email, password_hash, is_verified, lockout_until, created_at)
+verification_tokens (token, user_id, expires_at, type)
+mfa_secrets (user_id, secret, backup_codes)
+
+1.3 Internationalization (i18n) Service
+What to Implement:
+
+Translation management system
+Support for 8+ Indian languages (English, Hindi, Marathi, Gujarati, Tamil, Telugu, Kannada, Malayalam)
+Translation caching with Redis
+Dynamic language switching
+Translation key management
+Fallback mechanism (default to English)
+
+Database Tables:
+
+translations (key, language_code, value, module, last_updated)
+supported_languages (code, name, is_active, display_order)
+
+1.4 User Service
+What to Implement:
+
+User CRUD operations
+Advisor profile creation and management
+72-hour grace period tracking
+Profile field locking mechanism
+Photo/logo upload preparation (URLs only)
+City selection with "Others" option
+Role and organization management
+Self-service profile updates (mobile, email only after grace period)
+
+Database Tables:
+
+advisor_profiles (user_id, full_name, organization, role, mobile, email, city, photo_url, logo_url, created_at, profile_locked_at, is_profile_locked)
+profile_update_requests (user_id, field_name, old_value, new_value, status, requested_at)
+
+Frontend Modules
+1.1 Core Setup
+
+React app initialization with TypeScript
+React Router setup
+Redux Toolkit/Zustand for state management
+Axios interceptors for API calls
+Error boundary components
+React-i18next configuration
+
+1.2 i18n Provider Module
+What to Implement:
+
+Language switcher component
+Translation hook (useTranslation)
+Language detection (browser/user preference)
+Translation file structure for all modules
+RTL support for future expansion
+Number/date formatting per locale
+
+1.3 Authentication Module
+What to Implement:
+
+Login page with language selector
+Registration multi-step form
+Email verification page
+Password reset flow (request + reset pages)
+MFA setup page (for admins)
+Protected route wrapper component
+Token management (localStorage/secure cookies)
+
+1.4 Landing Page Module
+What to Implement:
+
+Hero section with CTA
+Features showcase section
+Pricing comparison table
+About Us section
+Testimonials slider
+"Book Free 3-Day Trial" prominent CTA
+Multilingual content switching
+Responsive design (mobile-first)
+
+
+PHASE 2: SUBSCRIPTION & PAYMENT (Weeks 5-7)
+Backend Modules
+2.1 Subscription Service
+What to Implement:
+
+7-tier subscription management
+Report count tracking
+Subscription expiry monitoring
+Auto-notification triggers (report limit/expiry)
+Tier validation for feature access
+Free trial management (3 days, 5 reports)
+Upgrade/downgrade logic
+Form selection during subscription
+
+Database Tables:
+
+subscriptions (user_id, tier, start_date, end_date, report_limit, reports_used, status)
+subscription_tiers (tier_name, price_original, price_launch, report_limit, features_json)
+form_selections (user_id, subscription_id, selected_forms_json, locked_at)
+trial_accounts (user_id, started_at, reports_used, status)
+
+2.2 Payment Service
+What to Implement:
+
+Razorpay/Stripe integration
+Payment initiation workflow
+Payment verification callback
+Refund processing (72-hour MBG logic)
+GST calculation (18%)
+Payment gateway fee deduction
+Transaction history logging
+Dunning management (failed payments)
+Invoice generation
+
+Database Tables:
+
+payments (id, user_id, amount, gateway_fee, gst, net_amount, gateway, status, transaction_id, created_at)
+refunds (payment_id, amount, reason, processed_at, status)
+invoices (payment_id, invoice_number, pdf_url, generated_at)
+
+2.3 Notification Service
+What to Implement:
+
+Email notification templates (multilingual)
+SMS notification via Twilio/MSG91
+Notification queue with Celery
+Event-triggered notifications:
+
+Welcome email after registration
+Subscription expiry warnings (30, 15, 7, 3 days)
+Report limit warnings (90%, 100%)
+Payment success/failure
+Refund confirmation
+
+
+Email templates with advisor branding
+
+Database Tables:
+
+notification_templates (type, language, subject, body_html, variables)
+notification_logs (user_id, type, status, sent_at, delivery_status)
+
+Frontend Modules
+2.1 Pricing & Subscription Module
+What to Implement:
+
+Pricing page with tier comparison
+"Buy Now" flow for each tier
+Form selection modal (Starter+, Specialist+)
+Trial signup flow
+Payment gateway integration UI
+Payment success/failure pages
+Invoice download functionality
+
+2.2 User Dashboard Module
+What to Implement:
+
+Dashboard home (subscription status, reports used/remaining)
+Subscription details card
+Renewal/upgrade CTAs
+Report history table (3-month retention)
+Profile management section
+Grace period indicator
+Quick stats (reports generated this month)
+
+
+PHASE 3: CALCULATION ENGINES & REPORT FORMS (Weeks 8-14)
+Backend Modules
+3.1 Calculation Engine Service
+What to Implement:
+
+Insurance Module:
+
+Term insurance needs analysis (HLV method)
+Health insurance family coverage calculation
+Premium inflation adjustment
+
+
+Retirement Module:
+
+Corpus calculation with inflation
+SIP scenarios (10%, 12%, 15% returns)
+Existing corpus factor
+Monthly investment requirements
+
+
+Child Planning Module:
+
+Education corpus (multi-child support)
+Wedding corpus calculation
+Goal-based timelines
+Individual SIP for each child
+
+
+Home Purchase Module:
+
+Down payment calculation
+Loan eligibility (weighted income × 60)
+FOIR-based affordability (50%)
+EMI calculation
+Sequential savings window
+
+
+Car Purchase Module:
+
+Loan eligibility (weighted income × 24)
+FOIR-based affordability (40%)
+Down payment SIP calculation
+
+
+Vacation Planner Module:
+
+Sequential accumulation logic
+Month-by-month inflation
+Multiple vacation planning
+
+
+Tax Planning Module:
+
+80C/80D deduction optimization
+New vs Old regime comparison
+Monthly salary breakup support
+HRA exemption calculation
+
+
+
+Database Tables:
+
+calculation_cache (user_id, form_type, input_hash, result_json, created_at)
+calculation_logs (user_id, form_type, inputs_json, results_json, duration_ms)
+
+3.2 Form Data Service
+What to Implement:
+
+Form submission handling for all 8 forms
+Input validation per form type
+Data storage (for report regeneration)
+Form draft autosave
+Pre-filled form data retrieval
+Multilingual field labels and validation messages
+
+Database Tables:
+
+form_submissions (id, user_id, client_name, form_type, form_data_json, submitted_at)
+form_drafts (user_id, form_type, draft_data_json, last_saved_at)
+
+3.3 Report Generation Service
+What to Implement:
+
+PDF generation using ReportLab/WeasyPrint
+Executive summary generation (top 3 actions)
+Chart/graph generation (matplotlib/plotly)
+Goal-based scenario tables
+Context-sensitive CTA insertion
+Advisor branding (tier-based):
+
+Basic/Starter: Name + contact only
+Pro: Photo + logo + full branding
+
+
+Multi-goal report support (education, wedding)
+Watermarking
+Final CTA: "Book 1-on-1 Session"
+
+Database Tables:
+
+generated_reports (id, user_id, client_name, form_type, pdf_url, generated_at, expires_at)
+report_templates (form_type, language, template_html, version)
+
+Frontend Modules
+3.1 Form Components Library
+What to Implement:
+
+Reusable input components:
+
+Currency input with INR formatting
+Date picker (DOB with age calculation)
+Month/Year picker (purchase timeline)
+City dropdown with "Others" option
+Multi-checkbox (income sources)
+Slider (risk tolerance)
+File upload (documents)
+
+
+Form validation logic
+Progress indicators for multi-step forms
+Autosave functionality
+Field-level error messages (multilingual)
+
+3.2 Individual Form Modules
+Create 8 Separate Form Modules:
+
+Term Insurance Form
+
+Personal details section
+Income & expenses section
+Existing coverage section
+Dependents section
+Modal preview before PDF generation
+
+
+Health Insurance Form
+
+Family member details
+Existing policies section
+Medical history (optional)
+Coverage recommendations
+
+
+Retirement Planning Form
+
+Current age & retirement age
+Current expenses
+Existing retirement corpus
+Goal scenario inputs
+
+
+Child Education Planning Form
+
+Multiple child support (add/remove)
+Education type selection
+Years until goal
+Current savings
+
+
+Child Wedding Planning Form
+
+Similar to education form
+Wedding cost estimation inputs
+
+
+Home Purchase Planning Form
+
+Property type & city
+Cost estimation
+Income sources (weighted)
+Down payment planning
+Loan eligibility check
+
+
+Car Purchase Planning Form
+
+Car type selection
+Cost & timeline
+Income sources
+Loan & EMI calculations
+
+
+Vacation Planner Form
+
+Multiple vacation rows (dynamic)
+Date-based planning
+Sequential accumulation
+Per-vacation costs
+
+
+Smart Tax Planning Form
+
+Monthly salary breakup toggle
+Income heads selection
+Deductions (80C, 80D, etc.)
+Regime selection (old vs new)
+Frontend calculation display
+Direct PDF download (no backend)
+
+
+
+3.3 Report Viewer Module
+What to Implement:
+
+Report preview modal after calculation
+Summary display (existing, recommended, shortfall)
+"Generate PDF" button (consumes report credit)
+Report history list
+PDF download functionality
+Report expiry indicator (3 months)
+Share report (email link)
+
+
+PHASE 4: PRO TIER FEATURES (Weeks 15-18)
+Backend Modules
+4.1 Financial Horoscope Service
+What to Implement:
+
+Comprehensive financial health scoring
+10-dimension analysis:
+
+Life insurance adequacy
+Health insurance coverage
+Emergency fund status
+Retirement preparedness
+Child goals funding
+Debt-to-income ratio
+Investment diversification
+Tax efficiency
+Estate planning
+Risk management
+
+
+Top 5 critical actions generation
+Personalized recommendations
+CTA links to 1-on-1 interface
+
+Database Tables:
+
+horoscope_results (user_id, client_id, scores_json, recommendations_json, generated_at)
+
+4.2 1-on-1 Financial Planning Service
+What to Implement:
+
+Interactive session management
+Goal selection/modification
+Risk management module
+Customizable planning pages
+Session data persistence
+Collaboration features (notes, highlights)
+1-pager summary generation
+Next steps & guidelines
+
+Database Tables:
+
+planning_sessions (id, advisor_id, client_id, goals_json, risk_data_json, created_at, last_updated)
+session_customizations (session_id, page_type, custom_data_json)
+session_summaries (session_id, summary_pdf_url, generated_at)
+
+Frontend Modules
+4.1 Financial Horoscope Module
+What to Implement:
+
+Comprehensive data collection form
+Visual scoring dashboard (radar chart)
+Dimension-wise breakdown
+Top 5 actions display with CTAs
+PDF report generation
+Link to 1-on-1 interface from each action
+
+4.2 1-on-1 Planning Interface Module
+What to Implement:
+
+Client dashboard (advisor's view)
+Two-button interface:
+
+"Generate Report"
+"Financial Planning"
+
+
+Interactive goal management:
+
+Pre-loaded goals from horoscope
+Add/remove goals dynamically
+Dedicated page per goal
+
+
+Risk management section:
+
+Life insurance planning
+Health insurance planning
+Disability coverage
+
+
+Customization tools:
+
+Text editor for notes
+Drag-drop reordering
+Custom calculator widgets
+
+
+1-pager summary preview & download
+
+
+PHASE 5: AFFILIATE PROGRAM (Weeks 19-21)
+Backend Modules
+5.1 Affiliate Service
+What to Implement:
+
+Affiliate onboarding & approval workflow
+Unique referral link generation
+Dynamic landing page data management
+Referral tracking (via URL parameters)
+Conversion attribution
+Commission calculation:
+
+Tiered structure (20%-40%)
+Renewal commission (10% lifetime)
+Monthly payout calculation
+
+
+Custom commission override (per affiliate)
+Payout processing workflow
+
+Database Tables:
+
+affiliates (id, name, email, photo_url, bio, status, joined_at, approved_at)
+affiliate_links (affiliate_id, unique_code, landing_page_url)
+referrals (affiliate_id, referred_user_id, subscription_id, conversion_date, tier)
+commissions (affiliate_id, referral_id, amount, type, status, paid_at)
+custom_commissions (affiliate_id, override_rate, effective_from)
+
+5.2 Affiliate Dashboard Service
+What to Implement:
+
+Performance metrics API
+Referral list with detailed status
+Commission breakdown
+Payout history
+Marketing assets delivery
+Demo account management
+
+Frontend Modules
+5.1 Dynamic Affiliate Landing Page
+What to Implement:
+
+Single template with dynamic data
+URL-based data fetching (/partners/[affiliate_id])
+Partner branding display:
+
+Photo/logo
+Bio
+Custom headline/offer
+
+
+CTA button with ref_id appended
+Conversion tracking script
+
+5.2 Affiliate Dashboard Module
+What to Implement:
+
+Login page (separate from advisor login)
+Performance overview dashboard
+Referral table with filters
+Commission breakdown charts
+Payout history
+Referral link management (copy button)
+Marketing asset downloads
+Demo account access
+
+
+PHASE 6: ADMIN PANEL (Weeks 22-24)
+Backend Modules
+6.1 Admin Service
+What to Implement:
+
+User search & management
+Subscription management:
+
+Change tier
+Extend subscription
+Cancel subscription
+
+
+Profile update approval (critical fields)
+Refund processing
+Dynamic pricing control:
+
+Update tier prices
+Modify report limits
+Enable/disable features
+
+
+Affiliate management:
+
+Approve/reject applications
+Set custom commission rates
+Manage landing pages
+
+
+Analytics data aggregation
+Audit log viewing
+
+Database Tables:
+
+admin_users (id, email, role, permissions_json, mfa_enabled)
+audit_logs (admin_id, action, entity_type, entity_id, changes_json, timestamp)
+dynamic_config (key, value_json, updated_by, updated_at)
+
+6.2 Analytics Service
+What to Implement:
+
+Real-time metrics calculation
+Dashboard data aggregation:
+
+Total users by tier
+Reports generated (by tier, by form type)
+Revenue breakdown
+Conversion rates (trial → paid)
+Churn rate tracking
+Affiliate performance
+
+
+Date range filtering
+Export functionality (CSV/Excel)
+
+Frontend Modules
+6.1 Master Admin Panel
+What to Implement:
+
+Secure login with MFA
+Dashboard overview:
+
+Key metrics cards
+Revenue charts
+User growth graph
+Report generation trends
+
+
+User management section:
+
+Search & filter
+User detail view
+Subscription modification
+Profile update requests approval
+
+
+Subscription management:
+
+Tier configuration editor
+Pricing table updater
+Feature toggle interface
+
+
+Affiliate management:
+
+Pending approvals list
+Commission configuration
+Landing page content editor
+
+
+Refund processing interface
+Audit log viewer
+Analytics dashboard with date filters
+
+
+PHASE 7: STORAGE & INFRASTRUCTURE (Weeks 25-26)
+Backend Modules
+7.1 Storage Service
+What to Implement:
+
+AWS S3/Azure Blob/GCP Storage integration
+File upload handling:
+
+Advisor photos (max 2MB, JPG/PNG)
+Advisor logos (max 1MB, PNG/SVG)
+Client documents (optional, max 5MB)
+
+
+Presigned URL generation (secure downloads)
+3-month auto-deletion for reports
+File validation (size, type, dimensions)
+CDN integration for faster delivery
+
+Database Tables:
+
+file_metadata (id, user_id, file_type, storage_path, size_bytes, uploaded_at, expires_at)
+
+7.2 Email Service
+What to Implement:
+
+SendGrid/AWS SES integration
+Template management system
+Email queue with Celery
+Bounce/complaint handling
+Unsubscribe management
+Email personalization
+Attachment handling (invoices, reports)
+
+7.3 Background Jobs Service
+What to Implement:
+
+Celery worker setup
+Scheduled tasks:
+
+Daily: Check subscriptions expiring in 7/3/1 days
+Daily: Check report limits (90%, 100%)
+Daily: Auto-delete expired reports (>3 months)
+Monthly: Calculate affiliate commissions
+Monthly: Process affiliate payouts
+
+
+Task monitoring dashboard
+
+
+PHASE 8: TESTING & OPTIMIZATION (Weeks 27-29)
+What to Implement:
+Backend Testing
+
+Unit tests for all services (pytest)
+Integration tests for microservices communication
+API endpoint testing (FastAPI TestClient)
+Load testing (Locust/JMeter)
+Database migration testing
+Security testing (penetration, OWASP Top 10)
+
+Frontend Testing
+
+Component testing (React Testing Library)
+E2E testing (Cypress/Playwright)
+Accessibility testing (axe-core)
+Performance testing (Lighthouse)
+Cross-browser testing
+Mobile responsiveness testing
+
+Optimization
+
+Database query optimization (indexes, explain analyze)
+API response caching (Redis)
+Frontend code splitting
+Image optimization & lazy loading
+CDN configuration
+Database connection pooling
+Microservice inter-communication optimization
+
+
+PHASE 9: DEPLOYMENT & MONITORING (Weeks 30-32)
+What to Implement:
+Deployment
+
+Docker containers for all microservices
+Kubernetes cluster setup (or ECS/GKE)
+CI/CD pipelines (GitHub Actions/GitLab CI)
+Blue-green deployment strategy
+Database backup automation
+SSL certificate automation (Let's Encrypt)
+
+Monitoring
+
+Application monitoring (New Relic/Datadog)
+Log aggregation (ELK Stack/CloudWatch)
+Error tracking (Sentry)
+Uptime monitoring (Pingdom/UptimeRobot)
+Performance monitoring (APM)
+Cost monitoring (cloud billing alerts)
+
+Documentation
+
+API documentation (Swagger/OpenAPI)
+Developer onboarding guide
+Deployment runbooks
+Disaster recovery procedures
+User manuals (advisor & affiliate)
+
+
+MULTILINGUAL IMPLEMENTATION STRATEGY
+At Every Phase:
+
+Backend:
+
+Every API response includes translatable keys
+Error messages use translation keys
+Email templates in all 8 languages
+Validation messages multilingual
+
+
+Frontend:
+
+All text wrapped in t() function
+Language switcher in header
+Date/number formatting per locale
+Form labels & placeholders translated
+Error messages translated
+
+
+Content:
+
+Landing page in all languages
+Email templates multilingual
+Report templates support RTL (future)
+PDF reports with language selection
+
+
+
+Languages to Support:
+
+English (default)
+Hindi (हिंदी)
+Marathi (मराठी)
+Gujarati (ગુજરાતી)
+Tamil (தமிழ்)
+Telugu (తెలుగు)
+Kannada (ಕನ್ನಡ)
+Malayalam (മലയാളം)
+
+
+CRITICAL DEPENDENCIES BETWEEN PHASES
+Phase 1 (Foundation) → Phase 2 (Subscription) → Phase 3 (Forms & Reports)
+                    ↓
+                Phase 4 (Pro Features)
+                    ↓
+Phase 5 (Affiliates) → Phase 6 (Admin) → Phase 7 (Storage) → Phase 8 (Testing) → Phase 9 (Deploy)
+Must Complete Before Next:
+
+Phase 1 before everything (authentication foundation)
+Phase 2 before Phase 3 (can't generate reports without subscription)
+Phase 3 before Phase 4 (Pro features depend on forms)
+Phase 7 runs parallel to Phases 3-6 (storage needed throughout)
+
+This phased approach ensures incremental delivery, testable milestones, and plug-and-play microservices architecture with comprehensive multilingual support at every level.RetryRBAffiliate User  ->  add by admin (or)  join via sign up page --> admin approve then only  Affiliate User dashboard can access -- customize landing page get a uniquie ID . any advisor joined via affliate landing page or link --> affliate get commision -- Thats all ( Affiliate User see his dashboard , see plans given by admin , customize landing page , see his commision dashboard and details , )-- in commison any changes admin can do after approved commistion rate calculates commision when admin approves / rejesct / payment ( status updated in feature auto payment integrated from this only) --------------------------  advisor signup directly from amin website or  any affliate landing page or --any affliate provided link -- initially get trail plan -Later he can purchase plan -- after that as per plan  he can change anything can do --------- additional clarity now give project overviewSynthesized affiliate and advisor workflows into cohesive project architecture.The user wants me to clarify the affiliate workflow and then provide a comprehensive project overview with the new understanding. Let me break down what they're saying:
+Affiliate User Flow:
+
+Affiliate can be added by admin directly OR sign up via a signup page
+After signup, admin must approve before affiliate can access dashboard
+Once approved, affiliate gets:
+
+Access to dashboard
+Ability to customize their landing page
+Unique referral ID/link
+Commission dashboard with details
+
+
+When an advisor joins via affiliate's landing page/link, affiliate earns commission
+Commission changes can be made by admin
+Commission status workflow: admin approves/rejects → payment (future: auto-payment integration)
+
+Advisor Signup Flow:
+
+Advisor can sign up from:
+
+Main website directly
+Any affiliate landing page
+Any affiliate-provided link
+
+
+Initially gets trial plan (3 days, 5 reports)
+Later can purchase any paid plan
+After purchasing, can use features as per their plan tier
+
+Let me now provide a comprehensive project overview with this clarity.SalahkaarPro: Complete Project Overview (Updated)
+1. PROJECT VISION & BUSINESS MODEL
+What is SalahkaarPro?
+A B2B SaaS platform that empowers financial advisors to generate professional, branded financial planning reports for their clients through a tiered subscription model, while enabling affiliate partners to earn commissions by promoting the platform.
+Core Value Propositions
+
+For Advisors: Professional report generation without manual calculations, instant credibility with clients
+For Affiliates: Revenue opportunity through commission-based referrals
+For Platform: Scalable SaaS revenue with dual acquisition channels (organic + affiliate)
+
+
+2. USER ECOSYSTEM
+Three Primary User Types
+┌─────────────────────────────────────────────────────────────┐
+│                     USER ECOSYSTEM                          │
+│                                                             │
+│  ┌─────────────┐      ┌─────────────┐      ┌────────────┐ │
+│  │   MASTER    │      │  AFFILIATE  │      │  ADVISOR   │ │
+│  │   ADMIN     │◄────►│    USER     │◄────►│   USER     │ │
+│  │ (Platform)  │      │ (Promoter)  │      │ (End User) │ │
+│  └─────────────┘      └─────────────┘      └────────────┘ │
+│        │                     │                    │        │
+│        │                     │                    │        │
+│   Manages all          Earns commission      Generates     │
+│   Approves/Rejects     Customizes page       Reports       │
+│   Sets commissions     Tracks referrals      Pays for      │
+│   Processes payments   Views dashboard       Subscription  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## **3. AFFILIATE USER COMPLETE WORKFLOW**
+
+### **Phase 1: Affiliate Onboarding**
+
+#### **Entry Points (2 Methods)**
+
+**Method A: Admin Adds Affiliate**
+```
+Master Admin Panel
+    ↓
+"Add New Affiliate" Section
+    ↓
+Admin enters:
+  - Name
+  - Email
+  - Mobile
+  - Photo/Logo
+  - Bio/Description
+  - Initial Commission Rate (optional, defaults to tier structure)
+    ↓
+System automatically:
+  - Creates affiliate account
+  - Generates unique ID (e.g., AFF_12345)
+  - Sends welcome email with credentials
+  - Status: "Approved" (immediate access)
+    ↓
+Affiliate receives email with:
+  - Login credentials
+  - Dashboard access link
+  - Getting started guide
+```
+
+**Method B: Affiliate Self-Signup**
+```
+Main Website
+    ↓
+"Become an Affiliate" Page
+    ↓
+Affiliate fills form:
+  - Name
+  - Email
+  - Mobile
+  - Company/Organization (optional)
+  - Why you want to join (text area)
+  - Agreement to terms checkbox
+    ↓
+System creates account:
+  - Status: "Pending Approval"
+  - Sends notification to admin
+  - Sends confirmation email to affiliate
+    ↓
+Affiliate waits for approval
+    ↓
+Admin reviews in "Pending Affiliates" section:
+  - View application details
+  - Approve or Reject
+    ↓
+If Approved:
+  - Status: "Approved"
+  - Unique ID generated
+  - Email sent with credentials
+  - Affiliate can access dashboard
+    ↓
+If Rejected:
+  - Status: "Rejected"
+  - Rejection email sent with reason
+  - Account remains inactive
+```
+
+### **Phase 2: Affiliate Dashboard Access**
+
+**Dashboard Components:**
+```
+AFFILIATE DASHBOARD
+│
+├── Overview Section
+│   ├── Total Referrals (count)
+│   ├── Active Advisors (from referrals)
+│   ├── Total Commission Earned (₹)
+│   ├── Pending Commission (₹)
+│   ├── Paid Commission (₹)
+│   └── This Month Performance
+│
+├── Referral Management
+│   ├── Unique Referral Link (with copy button)
+│   │   Example: salahkaarpro.com/ref/AFF_12345
+│   ├── Landing Page Link (if customized)
+│   │   Example: salahkaarpro.com/partners/AFF_12345
+│   └── QR Code for link sharing
+│
+├── Landing Page Customization
+│   ├── Preview current page
+│   ├── Edit custom fields:
+│   │   ├── Headline text
+│   │   ├── Special offer text
+│   │   ├── Your photo/logo upload
+│   │   ├── Bio/description
+│   │   └── Custom message
+│   ├── Save & Publish
+│   └── View Live Page button
+│
+├── Referral List Table
+│   ├── Advisor Name
+│   ├── Signup Date
+│   ├── Subscription Tier
+│   ├── Subscription Status (Trial/Active/Expired)
+│   ├── Commission Amount
+│   ├── Commission Status (Pending/Approved/Paid)
+│   └── Actions (View Details)
+│
+├── Commission Dashboard
+│   ├── Commission Plan Details (assigned by admin)
+│   │   ├── Tier 1: 20% (₹0 - ₹1,00,000)
+│   │   ├── Tier 2: 25% (₹1,00,001 - ₹2,00,000)
+│   │   ├── Tier 3: 30% (₹2,00,001 - ₹4,00,000)
+│   │   ├── Tier 4: 40% (Above ₹4,00,001)
+│   │   └── Renewal: 10% (Lifetime)
+│   ├── Custom Rate (if admin overrode)
+│   ├── Commission Breakdown (charts)
+│   │   ├── By Month
+│   │   ├── By Advisor Tier
+│   │   └── New vs Renewal
+│   └── Commission Transactions Table
+│       ├── Date
+│       ├── Advisor Name
+│       ├── Transaction Type (New/Renewal)
+│       ├── Amount
+│       ├── Commission Rate
+│       ├── Commission Earned
+│       ├── Status (Pending/Approved/Rejected/Paid)
+│       └── Payment Date
+│
+├── Payout History
+│   ├── Payout Date
+│   ├── Amount
+│   ├── Payment Method
+│   ├── Transaction ID
+│   └── Invoice Download
+│
+├── Marketing Assets
+│   ├── Promotional Videos
+│   ├── Banner Images
+│   ├── Email Templates
+│   ├── Social Media Graphics
+│   └── Demo Account Access
+│
+└── Profile Settings
+    ├── Update personal info
+    ├── Bank account details (for payouts)
+    ├── Tax information (PAN, GST if applicable)
+    └── Change password
+```
+
+### **Phase 3: Commission Flow (Detailed)**
+
+#### **Step 1: Advisor Signup via Affiliate**
+```
+User clicks affiliate link/lands on custom page
+    ↓
+URL contains: ?ref=AFF_12345
+    ↓
+User completes signup
+    ↓
+System records in database:
+  - referrals table: (affiliate_id: AFF_12345, advisor_id: ADV_67890, signup_date, status: "trial")
+    ↓
+Affiliate sees in dashboard:
+  - New entry in "Referral List"
+  - Status: "Trial" (3 days, 5 reports)
+  - Commission: "Pending Conversion"
+```
+
+#### **Step 2: Advisor Purchases Subscription**
+```
+Advisor completes trial
+    ↓
+Chooses subscription tier (e.g., Starter+ at ₹4,499)
+    ↓
+Payment successful
+    ↓
+System calculates:
+  - Payment amount: ₹4,499
+  - Less GST (18%): ₹679.82
+  - Less payment gateway fee (2%): ₹89.98
+  - Net amount: ₹3,729.20
+  - Affiliate's commission tier: 20% (assuming first ₹1L revenue)
+  - Commission amount: ₹3,729.20 × 20% = ₹745.84
+    ↓
+System creates commission record:
+  - commissions table:
+    {
+      affiliate_id: AFF_12345,
+      advisor_id: ADV_67890,
+      transaction_type: "new_subscription",
+      subscription_tier: "Starter+",
+      gross_amount: 4499,
+      net_amount: 3729.20,
+      commission_rate: 20%,
+      commission_amount: 745.84,
+      status: "pending_approval",
+      created_at: timestamp
+    }
+    ↓
+Affiliate dashboard updates:
+  - Total Commission Earned: +₹745.84 (in "Pending" status)
+  - Referral status: "Active Subscriber"
+```
+
+#### **Step 3: Admin Reviews Commission**
+```
+Master Admin Panel
+    ↓
+"Commission Management" Section
+    ↓
+Sees pending commission:
+  - Affiliate: John Doe (AFF_12345)
+  - Advisor: Rajesh Kumar (ADV_67890)
+  - Amount: ₹745.84
+  - Status: Pending Approval
+    ↓
+Admin actions:
+  ┌─────────────────┬─────────────────┬──────────────────┐
+  │   APPROVE       │    REJECT       │   MODIFY         │
+  └─────────────────┴─────────────────┴──────────────────┘
+```
+
+**Action: APPROVE**
+```
+Admin clicks "Approve"
+    ↓
+System updates:
+  - status: "approved"
+  - approved_by: admin_id
+  - approved_at: timestamp
+    ↓
+Affiliate dashboard shows:
+  - Status: "Approved"
+  - Eligible for next payout cycle
+    ↓
+Email sent to affiliate:
+  "Your commission of ₹745.84 has been approved and will be paid on [payout_date]"
+```
+
+**Action: REJECT**
+```
+Admin clicks "Reject"
+    ↓
+Modal opens: "Reason for rejection" (required field)
+    ↓
+Admin enters reason: "Suspected fraudulent referral"
+    ↓
+System updates:
+  - status: "rejected"
+  - rejected_by: admin_id
+  - rejected_at: timestamp
+  - rejection_reason: "Suspected fraudulent referral"
+    ↓
+Affiliate dashboard shows:
+  - Status: "Rejected"
+  - Commission amount deducted from pending
+    ↓
+Email sent to affiliate:
+  "Your commission has been rejected. Reason: [reason]"
+```
+
+**Action: MODIFY**
+```
+Admin clicks "Modify"
+    ↓
+Modal opens with fields:
+  - Current commission amount: ₹745.84
+  - New commission amount: [editable]
+  - Reason for modification: [text area]
+    ↓
+Admin changes to: ₹600.00
+Reason: "Negotiated custom rate for this referral"
+    ↓
+System updates:
+  - commission_amount: 600.00
+  - original_amount: 745.84
+  - modified_by: admin_id
+  - modification_reason: "Negotiated custom rate..."
+  - status: "modified_approved"
+    ↓
+Affiliate dashboard shows:
+  - Commission: ₹600.00 (Modified)
+  - Original: ₹745.84
+  - Can view modification reason
+```
+
+#### **Step 4: Monthly Payout Processing**
+```
+End of month (automated job)
+    ↓
+System aggregates all "approved" commissions:
+  - Filters: status = "approved" AND payout_status = "pending"
+    ↓
+Groups by affiliate_id:
+  - AFF_12345: Total ₹15,450.00 (20 referrals)
+    ↓
+Admin reviews payout queue:
+  - "Process Payouts" section
+  - List of affiliates with amounts
+    ↓
+Admin actions:
+  ┌────────────────────────┬──────────────────────┐
+  │  PROCESS INDIVIDUAL    │   BULK PROCESS       │
+  │  (for testing/manual)  │   (all at once)      │
+  └────────────────────────┴──────────────────────┘
+```
+
+**Manual Processing:**
+```
+Admin clicks "Process Payment" for AFF_12345
+    ↓
+Modal shows:
+  - Affiliate: John Doe
+  - Bank Account: HDFC Bank - ****5678
+  - Amount: ₹15,450.00
+  - Payment method: [NEFT/RTGS/UPI]
+    ↓
+Admin confirms
+    ↓
+System updates:
+  - All related commissions: payout_status = "paid"
+  - payout_date: timestamp
+  - payment_reference: generated_id
+    ↓
+System creates payout record:
+  - payouts table:
+    {
+      affiliate_id: AFF_12345,
+      amount: 15450.00,
+      payment_method: "NEFT",
+      transaction_id: "PAY_ABC123",
+      processed_by: admin_id,
+      processed_at: timestamp
+    }
+    ↓
+Affiliate dashboard updates:
+  - Payout History: New entry
+  - Pending Commission: -₹15,450.00
+  - Paid Commission: +₹15,450.00
+    ↓
+Email & SMS sent:
+  "Your commission of ₹15,450 has been processed. Check your bank account."
+```
+
+**Future: Auto-Payment Integration**
+```
+Admin enables auto-payout in settings
+    ↓
+Integrates with Razorpay Payouts API
+    ↓
+Monthly job runs automatically:
+  - Fetches all approved commissions
+  - Groups by affiliate
+  - Initiates payouts via API
+  - Updates status automatically
+  - Sends notifications
+    ↓
+Admin only reviews exceptions/failures
+```
+
+#### **Step 5: Renewal Commission (Lifetime)**
+```
+Year later: Advisor renews Starter+ subscription
+    ↓
+Payment: ₹4,499
+Net amount: ₹3,729.20
+Renewal commission rate: 10% (fixed)
+Commission: ₹372.92
+    ↓
+System creates new commission record:
+  - transaction_type: "renewal"
+  - commission_rate: 10%
+  - commission_amount: 372.92
+  - status: "pending_approval"
+    ↓
+Same approval workflow as above
+    ↓
+This continues for lifetime of advisor
+```
+
+### **Phase 4: Landing Page Customization**
+
+**Affiliate Dashboard → "Customize Landing Page"**
+```
+┌──────────────────────────────────────────────────────┐
+│         LANDING PAGE CUSTOMIZATION                   │
+│                                                      │
+│  Preview Panel          │     Edit Panel            │
+│  (Live Preview)         │                           │
+│  ┌──────────────────┐  │  Headline Text:           │
+│  │  [Your Photo]    │  │  ┌─────────────────────┐  │
+│  │                  │  │  │ "Transform Your     │  │
+│  │  John Doe        │  │  │  Advisory Practice" │  │
+│  │  Financial Coach │  │  └─────────────────────┘  │
+│  │                  │  │                           │
+│  │  [Custom Text]   │  │  Special Offer:           │
+│  │  "Join 500+..."  │  │  ┌─────────────────────┐  │
+│  │                  │  │  │ "Get 20% OFF..."    │  │
+│  │  [See Plans CTA] │  │  └─────────────────────┘  │
+│  └──────────────────┘  │                           │
+│                        │  Your Bio:                │
+│  Your Landing Page:    │  ┌─────────────────────┐  │
+│  salahkaarpro.com/    │  │ "I help advisors..." │  │
+│  partners/AFF_12345    │  └─────────────────────┘  │
+│                        │                           │
+│  [Copy Link] [QR Code] │  Upload Photo:            │
+│                        │  [Choose File] (Max 2MB)  │
+│                        │                           │
+│                        │  Upload Logo:             │
+│                        │  [Choose File] (Max 1MB)  │
+│                        │                           │
+│                        │  [Save Changes] [Preview] │
+└──────────────────────────────────────────────────────┘
+```
+
+**Dynamic Landing Page Rendering:**
+```
+User visits: salahkaarpro.com/partners/AFF_12345
+    ↓
+Frontend detects affiliate ID from URL
+    ↓
+API call: GET /api/affiliates/AFF_12345/landing-page
+    ↓
+Backend returns:
+{
+  "affiliate_id": "AFF_12345",
+  "name": "John Doe",
+  "photo_url": "https://cdn.../john.jpg",
+  "logo_url": "https://cdn.../logo.png",
+  "custom_headline": "Transform Your Advisory Practice",
+  "special_offer": "Get 20% OFF on Pro Plan",
+  "bio": "I help advisors scale their business...",
+  "cta_text": "Start Your Free Trial"
+}
+    ↓
+Frontend renders landing page with:
+  - Hero section with custom headline
+  - Affiliate's photo and bio
+  - Special offer banner
+  - CTA button linking to: /signup?ref=AFF_12345
+    ↓
+Conversion tracking begins
+```
+
+---
+
+## **4. ADVISOR USER COMPLETE WORKFLOW**
+
+### **Entry Points (3 Methods)**
+
+**Method A: Direct from Main Website**
+```
+salahkaarpro.com homepage
+    ↓
+Clicks "Book Free 3-Day Trial"
+    ↓
+Registration form (no ref parameter)
+    ↓
+System tracks: source = "organic"
+```
+
+**Method B: Via Affiliate Landing Page**
+```
+salahkaarpro.com/partners/AFF_12345
+    ↓
+Clicks "Start Your Free Trial" CTA
+    ↓
+Redirected to: /signup?ref=AFF_12345
+    ↓
+System tracks: source = "affiliate", affiliate_id = AFF_12345
+```
+
+**Method C: Via Affiliate Direct Link**
+```
+Affiliate shares: salahkaarpro.com/ref/AFF_12345
+    ↓
+User clicks link
+    ↓
+Redirected to: /signup?ref=AFF_12345
+    ↓
+System tracks: source = "affiliate", affiliate_id = AFF_12345
+```
+
+### **Registration & Trial Phase**
+```
+SIGNUP FORM
+│
+├── Personal Information
+│   ├── Full Name*
+│   ├── Email* (verification required)
+│   ├── Mobile Number* (10-digit)
+│   ├── Gender
+│   └── Date of Birth (min age: 23)
+│
+├── Professional Information
+│   ├── Organization Name*
+│   ├── Role/Designation*
+│   ├── City of Residence*
+│   └── City Tier (removed as per update)
+│
+├── Optional Branding
+│   ├── Upload Photo (max 2MB)
+│   └── Upload Logo (max 1MB)
+│   └── Note: "Photos/logos visible only on Pro tier reports"
+│
+├── Legal Agreements*
+│   ├── ☐ I agree to Terms & Conditions (clickable)
+│   ├── ☐ I have read the Privacy Policy (clickable)
+│   └── Note: "By registering, you accept our Refund Policy"
+│
+└── [Start Free Trial] Button
+    ↓
+Email verification sent
+    ↓
+User clicks verification link
+    ↓
+Account created with:
+  - Status: "trial"
+  - Tier: "Starter" (temporary)
+  - Report limit: 5
+  - Expiry: 3 days from activation
+  - Grace period: 72 hours (for name/org/role edits)
+    ↓
+Welcome email sent with:
+  - Dashboard access instructions
+  - Quick start guide
+  - Video tutorials
+```
+
+### **Trial Period Experience**
+```
+USER DASHBOARD (Trial)
+│
+├── Trial Banner (prominent)
+│   "Trial Active: 2 days remaining | 3/5 reports used"
+│   [Upgrade to Paid Plan]
+│
+├── Full Access to All Features:
+│   ├── All 8 report forms accessible
+│   ├── Financial Horoscope (Pro feature preview)
+│   ├── 1-on-1 Interface (Pro feature preview)
+│   └── All calculators and tools
+│
+├── Report Generation
+│   ├── Select any form
+│   ├── Fill client data
+│   ├── View calculation summary (modal)
+│   ├── Generate PDF (deducts from 5-report limit)
+│   └── Download report
+│
+└── Trial End Scenarios:
+    ├── 5 reports used before 3 days:
+    │   → Immediate upgrade prompt
+    │   → Report generation locked
+    │
+    └── 3 days expire:
+        → Account status: "trial_expired"
+        → All features locked
+        → Upgrade prompt modal
+```
+
+### **Subscription Purchase Phase**
+```
+User clicks "Upgrade to Paid Plan"
+    ↓
+PRICING PAGE (7 Tiers)
+│
+├── Basic (₹1,999) - 50 reports
+├── Starter (₹3,499) - 100 reports
+├── Starter+ (₹4,499) - 150 reports + Form selection*
+├── Specialist (₹5,999) - 200 reports
+├── Specialist+ (₹7,999) - 250 reports + Form selection*
+├── Pro (₹12,499) - 1,000 reports + Full features
+└── Enterprise (Custom) - Unlimited
+    ↓
+User selects tier
+    ↓
+IF Starter+ or Specialist+:
+  ┌─────────────────────────────────────┐
+  │     FORM SELECTION MODAL            │
+  │                                     │
+  │  Select 2 forms (Starter+)          │
+  │  or 3 forms (Specialist+):          │
+  │                                     │
+  │  ☐ Term Insurance                   │
+  │  ☐ Health Insurance                 │
+  │  ☐ Retirement Planning              │
+  │  ☐ Child Education                  │
+  │  ☐ Child Wedding                    │
+  │  ☐ Home Purchase                    │
+  │  ☐ Car Purchase                     │
+  │  ☐ Vacation Planning                │
+  │                                     │
+  │  ⚠️ Warning: Form selection cannot  │
+  │     be changed once confirmed!      │
+  │                                     │
+  │  [Confirm Selection]                │
+  └─────────────────────────────────────┘
+    ↓
+  User confirms forms
+    ↓
+PAYMENT GATEWAY (Razorpay/Stripe)
+│
+├── Order Summary:
+│   ├── Subscription: Starter+ (Annual)
+│   ├── Amount: ₹4,499
+│   ├── GST (18%): ₹809.82
+│   ├── Total: ₹5,308.82
+│   └── Selected Forms: Term Insurance, Retirement Planning
+│
+├── Payment Methods:
+│   ├── Credit/Debit Card
+│   ├── UPI
+│   ├── Net Banking
+│   └── Wallets
+│
+└── [Pay Now]
+    ↓
+Payment successful
+    ↓
+System updates:
+  - Account status: "active"
+  - Subscription tier: "Starter+"
+  - Report limit: 150 (annual)
+  - Reports used: 0 (reset counter)
+  - Start date: today
+  - End date: today + 365 days
+  - Selected forms: ["term_insurance", "retirement_planning"]
+  - Forms locked: true
+    ↓
+IF from affiliate:
+  - Create commission record
+  - Notify affiliate
+    ↓
+Email sent to advisor:
+  - Payment confirmation
+  - Invoice (PDF)
+  - Getting started guide for paid tier
+    ↓
+Dashboard access with full features
+```
+
+### **Post-Purchase: Advisor Usage**
+```
+ADVISOR DASHBOARD (Paid Account)
+│
+├── Header Section
+│   ├── Subscription: Starter+ (Active)
+│   ├── Reports: 145/150 remaining
+│   ├── Expires: 320 days
+│   └── [Upgrade Plan] [Renew Early]
+│
+├── Quick Actions
+│   ├── Generate New Report
+│   ├── View Report History (3 months)
+│   └── Manage Profile
+│
+├── Report Forms Section
+│   ├── Available Forms (unlocked based on tier):
+│   │   ├── ✓ Term Insurance (enabled)
+│   │   ├── ✓ Retirement Planning (enabled)
+│   │   ├── ✓ Smart Tax Planning (bonus - unlimited)
+│   │   ├── 🔒 Health Insurance (locked)
+│   │   ├── 🔒 Child Education (locked)
+│   │   ├── 🔒 Child Wedding (locked)
+│   │   ├── 🔒 Home Purchase (locked)
+│   │   └── 🔒 Vacation Planning (locked)
+│   └── Upgrade to access more forms
+│
+├── Report Generation Workflow
+│   ├── Select form (Term Insurance)
+│   ├── Fill client details (multilingual form)
+│   ├── Frontend collects data
+│   ├── Backend calculates
+│   ├── Modal shows summary:
+│   │   ├── Existing coverage: ₹50 lakhs
+│   │   ├── Recommended coverage: ₹2 crores
+│   │   ├── Shortfall: ₹1.5 crores
+│   │   └── Top 3 actions highlighted
+│   ├── Advisor reviews
+│   ├── Clicks "Generate PDF Report"
+│   ├── Report generated with branding:
+│   │   └── Name, Role, Contact (no photo/logo for non-Pro)
+│   ├── Report counter: 144/150 remaining
+│   └── PDF stored for 3 months
+│
+├── Profile Management
+│   ├── Editable (always):
+│   │   ├── Mobile number
+│   │   └── Email
+│   ├── Grace period (72 hours only):
+│   │   ├── Full name
+│   │   ├── Organization
+│   │   └── Role
+│   ├── Locked after 72 hours:
+│   │   └── Requires email to support@salahkaarpro.com
+│   └── Upload anytime:
+│       ├── Photo (stored but only visible on Pro reports)
+│       └── Logo (stored but only visible on Pro reports)
+│
+├── Subscription Management
+│   ├── Current Plan Details
+│   ├── Usage Statistics
+│   ├── Renewal Options:
+│   │   ├── Auto-renew (enable/disable)
+│   │   └── Renew early (discounts available)
+│   └── Upgrade Options:
+│       ├── Compare tiers
+│       ├── Pro-rated upgrade pricing
+│       └── Instant upgrade (additional reports added)
+│
+└── Notifications
+    ├── Report limit warnings:
+    │   ├── At 90% (135/150): "10 reports remaining"
+    │   └── At 100% (150/150): "Upgrade or renew to continue"
+    ├── Expiry warnings:
+    │   ├── 30 days before: "Subscription expiring soon"
+    │   ├── 7 days before: "Renew now to avoid disruption"
+    │   └── Expired: All features locked, upgrade prompt
+    └── Feature updates and announcements
+```
+
+### **Whichever Comes First: Report Limit or Expiry**
+```
+Scenario A: Reports Exhausted Before Year
+─────────────────────────────────────────
+Advisor uses 150 reports in 6 months
+    ↓
+System detects: reports_used = report_limit
+    ↓
+Account status: "active_no_reports"
+    ↓
+Dashboard shows:
+  "You've used all 150 reports. Your subscription is valid
+   for 6 more months, but report generation is locked."
+    ↓
+Options presented:
+  ├── Upgrade to higher tier (immediate reports added)
+  │   Example: Upgrade to Specialist (200 reports)
+  │   Cost: Pro-rated difference
+  │
+  └── Purchase additional report pack (future feature)
+      Example: Buy 50 more reports for ₹999
+    ↓
+User remains in "active_no_reports" status until:
+  - They upgrade/purchase more reports, OR
+  - Subscription expires (then full renewal needed)
+
+
+Scenario B: Subscription Expires Before Reports Used
+─────────────────────────────────────────────────────
+Advisor uses only 80/150 reports in 12 months
+    ↓
+System detects: current_date > end_date
+    ↓
+Account status: "expired"
+    ↓
+All features locked (unused reports forfeit)
+    ↓
+Dashboard shows:
+  "Your subscription has expired. Renew to continue."
+    ↓
+Options presented:
+  ├── Renew same tier (₹4,499 for Starter+)
+  │   New 150 reports + 365 days
+  │
+  └── Upgrade to different tier
+      Compare plans and select
+    ↓
+After renewal:
+  - Status: "active"
+  - Reports reset to new limit
+  - New 365-day period starts
+```
+
+---
+
+## **5. MASTER ADMIN COMPLETE WORKFLOW**
+
+### **Admin Panel Access & Security**
+```
+ADMIN LOGIN
+    ↓
+Email + Password
+    ↓
+MFA Required (Google Authenticator/SMS)
+    ↓
+Access Granted
+    ↓
+MASTER ADMIN DASHBOARD
+│
+├── Overview Metrics (Real-time)
+│   ├── Total Advisors: 1,247
+│   ├── Active Subscriptions: 1,089
+│   ├── Trial Users: 158
+│   ├── Total Affiliates: 45 (32 active)
+│   ├── Reports Generated (Today): 342
+│   ├── Revenue (This Month): ₹18,45,600
+│   └── Pending Actions:
+│       ├── Affiliate Approvals: 3
+│       ├── Commission Approvals: 27
+│       ├── Profile Update Requests: 5
+│       └── Refund Requests: 2
+│
+├── User Management Section
+│   │
+│   ├── Advisors Tab
+│   │   ├── Search & Filters:
+│   │   │   ├── By name/email/mobile
+│   │   │   ├── By tier
+│   │   │   ├── By status (active/trial/expired)
+│   │   │   └── By signup source (organic/affiliate)
+│   │   │
+│   │   ├── Advisor List Table:
+│   │   │   ├── Name, Email, Mobile
+│   │   │   ├── Subscription Tier
+│   │   │   ├── Reports Used/Limit
+│   │   │   ├── Expiry Date
+│   │   │   ├── Status
+│   │   │   └── Actions:
+│   │   │       ├── View Details
+│   │   │       ├── Edit Subscription
+│   │   │       ├── Extend Subscription
+│   │   │       ├── Add Reports
+│   │   │       ├── Cancel Subscription
+│   │   │       └── View Audit Log
+│   │   │
+│   │   └── Individual Advisor Detail View:
+│   │       ├── Personal Info
+│   │       ├── Subscription History
+│   │       ├── Payment History
+│   │       ├── Report Generation History
+│   │       ├── Activity Timeline
+│   │       └── Manual Actions:
+│   │           ├── Change Tier (with reason)
+│   │           ├── Extend Validity (free extension)
+│   │           ├── Add Bonus Reports
+│   │           ├── Approve Profile Changes
+│   │           └── Send Notification
+│   │
+│   └── Profile Update Requests Tab
+│       ├── Pending requests for critical fields
+│       ├── Request details:
+│       │   ├── Advisor name
+│       │   ├── Field to update
+│       │   ├── Old value
+│       │   ├── New value
+│       │   ├── Reason provided
+│       │   └── Requested date
+│       └── Actions:
+│           ├── Approve (update immediately)
+│           └── Reject (with reason)
+│
+├── Affiliate Management Section
+│   │
+│   ├── Active Affiliates Tab
+│   │   ├── List with stats:
+│   │   │   ├── Name, Email
+│   │   │   ├── Total Referrals
+│   │   │   ├── Active Advisors (from refs)
+│   │   │   ├── Total Commission Earned
+│   │   │   ├── Commission Plan
+│   │   │   └── Status
+│   │   └── Actions per affiliate:
+│   │       ├── View Dashboard (admin view)
+│   │       ├── View Landing Page
+│   │       ├── Edit Commission Plan
+│   │       ├── View Referral Details
+│   │       ├── Suspend/Deactivate
+│   │       └── Send Message
+│   │
+│   ├── Pending Approvals Tab
+│   │   ├── New affiliate applications
+│   │   ├── Application details:
+│   │   │   ├── Name, Email, Mobile
+│   │   │   ├── Company/Organization
+│   │   │   ├── Why joining (text)
+│   │   │   ├── Applied date
+│   │   │   └── Attached documents (if any)
+│   │   └── Actions:
+│   │       ├── Approve:
+│   │       │   ├── Assign commission plan
+│   │       │   ├── Generate unique ID
+│   │       │   ├── Send welcome email
+│   │       │   └── Grant dashboard access
+│   │       └── Reject:
+│   │           ├── Provide reason
+│   │           └── Send rejection email
+│   │
+│   ├── Add New Affiliate (Manual)
+│   │   ├── Form fields:
+│   │   │   ├── Name*
+│   │   │   ├── Email*
+│   │   │   ├── Mobile*
+│   │   │   ├── Photo/Logo upload
+│   │   │   ├── Bio
+│   │   │   └── Commission plan assignment
+│   │   ├── Auto-generates:
+│   │   │   ├── Unique ID
+│   │   │   ├── Referral link
+│   │   │   └── Landing page URL
+│   │   └── Sends welcome email with credentials
+│   │
+│   └── Landing Page Management
+│       ├── Preview all affiliate pages
+│       ├── Edit custom content (if needed)
+│       └── Monitor page performance
+│
+├── Commission Management Section
+│   │
+│   ├── Pending Approvals Tab
+│   │   ├── Commission records awaiting approval:
+│   │   │   ├── Affiliate Name
+│   │   │   ├── Advisor Name
+│   │   │   ├── Transaction Type (New/Renewal)
+│   │   │   ├── Subscription Tier
+│   │   │   ├── Gross Amount
+│   │   │   ├── Net Amount
+│   │   │   ├── Commission Rate
+│   │   │   ├── Commission Amount
+│   │   │   ├── Created Date
+│   │   │   └── Actions:
+│   │   │       ├── Approve (bulk or individual)
+│   │   │       ├── Reject (with reason)
+│   │   │       └── Modify Amount:
+│   │   │           ├── Enter new amount
+│   │   │           ├── Provide reason
+│   │   │           └── Save
+│   │   │
+│   │   └── Bulk Actions:
+│   │       ├── Select multiple commissions
+│   │       ├── Approve all selected
+│   │       └── Export to CSV
+│   │
+│   ├── Approved Commissions Tab
+│   │   ├── All approved, awaiting payout
+│   │   ├── Filtered by:
+│   │   │   ├── Affiliate
+│   │   │   ├── Date range
+│   │   │   └── Payout status
+│   │   └── Ready for payout processing
+│   │
+│   ├── Payout Processing Tab
+│   │   ├── Monthly payout queue
+│   │   ├── Grouped by affiliate:
+│   │   │   ├── Affiliate Name
+│   │   │   ├── Bank Details
+│   │   │   ├── Total Amount
+│   │   │   ├── Number of Commissions
+│   │   │   └── Tax Deduction (TDS if applicable)
+│   │   │
+│   │   ├── Manual Processing:
+│   │   │   ├── Select affiliate
+│   │   │   ├── Verify bank details
+│   │   │   ├── Choose payment method (NEFT/RTGS/UPI)
+│   │   │   ├── Enter transaction ID
+│   │   │   ├── Mark as paid
+│   │   │   └── System sends confirmation
+│   │   │
+│   │   └── Future: Auto-Payout Setup
+│   │       ├── Integrate Razorpay Payouts
+│   │       ├── Enable auto-processing
+│   │       ├── Set payout schedule (monthly/bi-weekly)
+│   │       └── Admin reviews only exceptions
+│   │
+│   ├── Rejected Commissions Tab
+│   │   ├── Historical rejections
+│   │   ├── Rejection reasons
+│   │   └── Dispute resolution (if any)
+│   │
+│   └── Commission Plan Management
+│       ├── View all commission structures
+│       ├── Default tiered structure:
+│       │   ├── Edit tier thresholds
+│       │   ├── Edit commission percentages
+│       │   └── Set renewal commission rate
+│       └── Custom affiliate plans:
+│           ├── Override default for specific affiliate
+│           ├── Set flat rate or custom tiers
+│           ├── Effective date range
+│           └── Reason for custom plan
+│
+├── Subscription & Pricing Management
+│   │
+│   ├── Tier Configuration
+│   │   ├── For each tier (Basic to Enterprise):
+│   │   │   ├── Original Price (₹)
+│   │   │   ├── Launch Offer Price (₹)
+│   │   │   ├── Report Limit
+│   │   │   ├── Features JSON:
+│   │   │       ├── Forms included
+│   │   │       ├── Branding options
+│   │   │       ├── Special features
+│   │   │       └── Support level
+│   │   │   └── Is Active (toggle)
+│   │   │
+│   │   └── Apply changes:
+│   │       ├── Immediate effect for new signups
+│   │       ├── Existing subscriptions unaffected
+│   │       └── Announcement email option
+│   │
+│   ├── Form Selection Rules
+│   │   ├── Starter+: 2 forms
+│   │   ├── Specialist+: 3 forms
+│   │   └── Lock/unlock forms per tier
+│   │
+│   └── Special Promotions
+│       ├── Create promo codes
+│       ├── Set discount percentage
+│       ├── Set validity period
+│       └── Usage limit per code
+│
+├── Payment & Refund Management
+│   │
+│   ├── Payment Transactions
+│   │   ├── All payment records
+│   │   ├── Filter by status/date/amount
+│   │   ├── View payment details:
+│   │   │   ├── Advisor details
+│   │   │   ├── Amount breakdown
+│   │   │   ├── Gateway fees
+│   │   │   ├── GST
+│   │   │   ├── Transaction ID
+│   │   │   └── Invoice link
+│   │   └── Actions:
+│   │       ├── Download invoice
+│   │       ├── Resend invoice
+│   │       └── Initiate refund
+│   │
+│   ├── Refund Requests
+│   │   ├── Pending refunds (within 72-hour MBG)
+│   │   ├── Request details:
+│   │   │   ├── Advisor info
+│   │   │   ├── Purchase date
+│   │   │   ├── Amount
+│   │   │   ├── Eligibility status:
+│   │   │       ├── Organic user (no trial): Eligible
+│   │   │       ├── Affiliate user: Eligible
+│   │   │       ├── Trial conversion: Not eligible
+│   │   │   ├── Time remaining (72-hour window)
+│   │   │   └── Reason provided
+│   │   │
+│   │   └── Actions:
+│   │       ├── Approve Refund:
+│   │       │   ├── Full refund to payment method
+│   │       │   ├── Update subscription status
+│   │       │   ├── If affiliate referral: reverse commission
+│   │       │   └── Send confirmation
+│   │       └── Reject Refund:
+│   │           ├── Provide reason
+│   │           └── Send email
+│   │
+│   └── Failed Payments (Dunning)
+│       ├── Auto-retry schedule
+│       ├── Email notification logs
+│       └── Manual retry option
+│
+├── Report & Analytics Dashboard
+│   │
+│   ├── Real-Time Metrics
+│   │   ├── Reports generated today/week/month
+│   │   ├── By form type (bar chart)
+│   │   ├── By subscription tier (pie chart)
+│   │   └── Peak usage times (line graph)
+│   │
+│   ├── Revenue Analytics
+│   │   ├── Revenue by tier (monthly trend)
+│   │   ├── MRR (Monthly Recurring Revenue)
+│   │   ├── ARR (Annual Recurring Revenue)
+│   │   ├── Revenue by source:
+│   │   │   ├── Organic
+│   │   │   └── Affiliate
+│   │   └── Affiliate commission payout vs revenue ratio
+│   │
+│   ├── User Analytics
+│   │   ├── Total users by status
+│   │   ├── Trial to paid conversion rate
+│   │   ├── Churn rate by tier
+│   │   ├── Average reports per user
+│   │   └── User geographic distribution
+│   │
+│   ├── Affiliate Analytics
+│   │   ├── Top performing affiliates
+│   │   ├── Referral conversion rate
+│   │   ├── Average commission per referral
+│   │   └── Affiliate vs organic comparison
+│   │
+│   └── Export Options
+│       ├── CSV/Excel export
+│       ├── Custom date range
+│       └── Scheduled reports (email)
+│
+├── System Configuration
+│   │
+│   ├── Email Templates
+│   │   ├── All notification types
+│   │   ├── Multilingual versions
+│   │   ├── Edit subject/body
+│   │   ├── Preview before saving
+│   │   └── Test send
+│   │
+│   ├── Policy Documents
+│   │   ├── Terms & Conditions
+│   │   ├── Privacy Policy
+│   │   ├── Refund Policy
+│   │   ├── Version control
+│   │   └── Publish updates
+│   │
+│   ├── Feature Flags
+│   │   ├── Enable/disable features globally
+│   │   ├── A/B testing toggles
+│   │   └── Rollout controls
+│   │
+│   └── API & Integration Settings
+│       ├── Payment gateway credentials
+│       ├── SMS provider settings
+│       ├── Email service config
+│       ├── Storage service config
+│       └── Third-party API keys
+│
+└── Audit Logs
+    ├── All admin actions logged
+    ├── Filter by:
+    │   ├── Admin user
+    │   ├── Action type
+    │   ├── Date range
+    │   └── Entity type
+    ├── View details:
+    │   ├── Who performed action
+    │   ├── What was changed
+    │   ├── Old vs new values
+    │   └── Timestamp
+    └── Export for compliance
+
+6. KEY SYSTEM INTEGRATIONS
+Payment Gateway Integration
+
+Razorpay/Stripe for subscriptions
+Support for UPI, Cards, Net Banking, Wallets
+Automatic invoice generation
+GST calculation (18%)
+Gateway fee deduction (2%)
+Webhook handling for payment status
+
+Email Service
+
+SendGrid/AWS SES
+Transactional emails (verification, password reset)
+Marketing emails (announcements, offers)
+Multilingual templates
+Delivery tracking
+
+SMS Service
+
+Twilio/MSG91
+OTP for MFA
+Payment confirmations
+Critical alerts
+
+Storage Service
+
+AWS S3/Azure Blob/GCP Storage
+Advisor photos/logos
+Generated PDF reports (3-month retention)
+Automated cleanup jobs
+
+Analytics & Monitoring
+
+Google Analytics for user behavior
+Mixpanel/Amplitude for product analytics
+Sentry for error tracking
+New Relic/Datadog for performance monitoring
+
+
+7. MULTILINGUAL SUPPORT (Everywhere)
+Languages Supported
+
+English (default)
+Hindi (हिंदी)
+Marathi (मराठी)
+Gujarati (ગુજરાતી)
+Tamil (தமிழ்)
+Telugu (తెలుగు)
+Kannada (ಕನ್ನಡ)
+Malayalam (മലയാളം)
+
+Implementation Areas
+
+Landing page
+Authentication pages
+All form labels and placeholders
+Dashboard UI
+Email templates
+SMS notifications
+PDF reports (client-facing content)
+Error messages
+Success messages
+Legal documents (T&C, Privacy Policy)
+
+
+8. SECURITY MEASURES
+Authentication
+
+Email verification mandatory
+Strong password policy (8+ chars, mixed case, numbers, symbols)
+Account lockout after 5 failed attempts
+JWT tokens with refresh mechanism
+MFA for admin accounts (Google Authenticator)
+
+Data Protection
+
+HTTPS/SSL for all traffic
+Database encryption at rest
+Password hashing (bcrypt/Argon2)
+PII data encryption
+GDPR compliance ready
+
+API Security
+
+Rate limiting per endpoint
+Input validation and sanitization
+CORS policies
+API key rotation
+Request logging for audit
+
+Backend Calculation Security
+
+All financial calculations server-side only
+No calculation logic in JavaScript (prevents reverse engineering)
+Proprietary algorithms protected
+
+
+9. SCALABILITY CONSIDERATIONS
+Database
+
+PostgreSQL primary database (relational data)
+Redis for caching and sessions
+MongoDB/DocumentDB for logs (optional)
+Database replication for high availability
+Read replicas for analytics queries
+
+Microservices
+
+Each service independently scalable
+Kubernetes orchestration
+Auto-scaling based on load
+Circuit breakers for fault tolerance
+
+CDN
+
+Cloudflare/CloudFront for asset delivery
+Static website hosting
+Image optimization
+PDF report delivery
+
+Background Jobs
+
+Celery workers for async tasks
+RabbitMQ/Redis as message broker
+Separate workers for:
+
+Email sending
+PDF generation
+Commission calculations
+Report cleanup
+
+
+
+
+10. FUTURE ROADMAP BUILT INTO ARCHITECTURE
+White-Label Model
+
+Dynamic branding system (already architected)
+Partner-specific subdomains
+Custom pricing per partner
+Isolated data per partner
+
+Channel Partner Model
+
+Hierarchical user roles (Partner → Sub-Advisors)
+Aggregated dashboards
+Sub-account management
+Bulk operations
+
+Mobile Apps
+
+Native Android/iOS apps
+RESTful API already supports
+Push notifications
+Offline mode (view reports)
+
+Advanced Features
+
+AI-powered recommendations
+Automated portfolio rebalancing
+CRM integrations (Salesforce, Zoho)
+Accounting software integration (Tally, QuickBooks)
+Client portal (advisors invite clients directly)
+
+
+This comprehensive overview provides the complete picture of SalahkaarPro with crystal-clear workflows for all three user types (Affiliate, Advisor, Admin) and detailed commission management processes.RetryRBuse mysql mongodb  if required redies ---- first complete implement of backend in python   json rest api end points -- like later frontend will designed -- production ready feature scalable  secure backend giveArchitected comprehensive production-ready backend with multiple databases.The user wants a complete, production-ready backend implementation in Python with:
+
+MySQL as primary database
+MongoDB if required for specific use cases
+Redis for caching/sessions
+JSON REST API endpoints
+Scalable, secure architecture
+Ready for frontend integration
+
+I need to provide:
+
+Complete project structure
+All microservices with detailed file structure
+Database schemas (MySQL + MongoDB)
+All API endpoints with request/response formats
+Authentication & authorization
+Security measures
+Scalability features
+Docker setup
+CI/CD considerations
+
+Let me structure this comprehensively as a production-ready backend.SalahkaarPro: Production-Ready Backend Implementation
+Technology Stack
+yamlPrimary Database: MySQL 8.0 (Transactional data)
+Document Store: MongoDB 6.0 (Logs, analytics, flexible schemas)
+Cache/Session: Redis 7.0 (Caching, session management, queue)
+Backend: Python 3.11+ with FastAPI
+ORM: SQLAlchemy (MySQL), Motor (MongoDB async)
+Task Queue: Celery with Redis broker
+API Gateway: Kong / NGINX
+Containerization: Docker + Docker Compose
+Orchestration: Kubernetes (production)
+```
+
+---
+
+## **PROJECT ROOT STRUCTURE**
+```
+salahkaarpro-backend/
+│
+├── docker-compose.yml
+├── docker-compose.prod.yml
+├── .env.example
+├── .gitignore
+├── README.md
+├── requirements.txt
+│
+├── api-gateway/
+│   ├── kong.yml
+│   └── nginx.conf
+│
+├── shared/
+│   ├── __init__.py
+│   ├── database/
+│   │   ├── mysql_base.py
+│   │   ├── mongodb_base.py
+│   │   └── redis_client.py
+│   ├── models/          # Shared Pydantic models
+│   ├── schemas/         # Shared database schemas
+│   ├── utils/
+│   │   ├── security.py
+│   │   ├── jwt_handler.py
+│   │   ├── validators.py
+│   │   ├── exceptions.py
+│   │   └── response.py
+│   └── middleware/
+│       ├── auth_middleware.py
+│       ├── rate_limiter.py
+│       └── cors_middleware.py
+│
+├── services/
+│   ├── auth-service/
+│   ├── user-service/
+│   ├── subscription-service/
+│   ├── payment-service/
+│   ├── calculation-service/
+│   ├── report-service/
+│   ├── affiliate-service/
+│   ├── admin-service/
+│   ├── notification-service/
+│   ├── storage-service/
+│   └── i18n-service/
+│
+├── workers/
+│   ├── celery_app.py
+│   ├── tasks/
+│   │   ├── email_tasks.py
+│   │   ├── sms_tasks.py
+│   │   ├── report_cleanup.py
+│   │   └── commission_calculator.py
+│   └── schedules.py
+│
+└── scripts/
+    ├── init_db.py
+    ├── seed_data.py
+    └── migration/
+
+SHARED MODULES
+1. Database Connections
+shared/database/mysql_base.py
+pythonfrom sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
+from contextlib import contextmanager
+import os
+
+DATABASE_URL = os.getenv(
+    "MYSQL_URL",
+    "mysql+pymysql://user:password@mysql:3306/salahkaarpro"
+)
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=20,
+    max_overflow=40,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    echo=False
+)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+@contextmanager
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+def get_db_session() -> Session:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+shared/database/mongodb_base.py
+pythonfrom motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import MongoClient
+import os
+
+MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://mongodb:27017")
+DATABASE_NAME = "salahkaarpro"
+
+# Async client for FastAPI
+async_client = AsyncIOMotorClient(MONGODB_URL)
+async_db = async_client[DATABASE_NAME]
+
+# Sync client for background tasks
+sync_client = MongoClient(MONGODB_URL)
+sync_db = sync_client[DATABASE_NAME]
+
+# Collections
+audit_logs = async_db.audit_logs
+activity_logs = async_db.activity_logs
+calculation_logs = async_db.calculation_logs
+analytics_events = async_db.analytics_events
+shared/database/redis_client.py
+pythonimport redis
+from redis import Redis
+import os
+import json
+from typing import Any, Optional
+
+REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+
+redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+
+class RedisCache:
+    def __init__(self, client: Redis = redis_client):
+        self.client = client
+    
+    def get(self, key: str) -> Optional[Any]:
+        value = self.client.get(key)
+        if value:
+            return json.loads(value)
+        return None
+    
+    def set(self, key: str, value: Any, expire: int = 3600):
+        self.client.setex(key, expire, json.dumps(value))
+    
+    def delete(self, key: str):
+        self.client.delete(key)
+    
+    def exists(self, key: str) -> bool:
+        return self.client.exists(key) > 0
+    
+    def increment(self, key: str, amount: int = 1) -> int:
+        return self.client.incrby(key, amount)
+    
+    def expire(self, key: str, seconds: int):
+        self.client.expire(key, seconds)
+
+cache = RedisCache()
+2. Security Utilities
+shared/utils/security.py
+pythonfrom passlib.context import CryptContext
+from datetime import datetime, timedelta
+from typing import Optional
+import secrets
+import hashlib
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+def generate_verification_token() -> str:
+    return secrets.token_urlsafe(32)
+
+def generate_api_key() -> str:
+    return f"sk_live_{secrets.token_urlsafe(32)}"
+
+def hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+shared/utils/jwt_handler.py
+pythonfrom jose import JWTError, jwt
+from datetime import datetime, timedelta
+from typing import Optional, Dict
+import os
+
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+REFRESH_TOKEN_EXPIRE_DAYS = 7
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    
+    to_encode.update({
+        "exp": expire,
+        "iat": datetime.utcnow(),
+        "type": "access"
+    })
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def create_refresh_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    to_encode.update({
+        "exp": expire,
+        "iat": datetime.utcnow(),
+        "type": "refresh"
+    })
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def decode_token(token: str) -> Optional[Dict]:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        return None
+
+def verify_token(token: str) -> bool:
+    payload = decode_token(token)
+    return payload is not None
+shared/utils/response.py
+pythonfrom typing import Any, Optional
+from fastapi.responses import JSONResponse
+
+def success_response(
+    data: Any = None,
+    message: str = "Success",
+    status_code: int = 200
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "success": True,
+            "message": message,
+            "data": data
+        }
+    )
+
+def error_response(
+    message: str,
+    errors: Optional[dict] = None,
+    status_code: int = 400
+) -> JSONResponse:
+    content = {
+        "success": False,
+        "message": message
+    }
+    if errors:
+        content["errors"] = errors
+    
+    return JSONResponse(
+        status_code=status_code,
+        content=content
+    )
+
+def paginated_response(
+    data: list,
+    total: int,
+    page: int,
+    page_size: int,
+    message: str = "Success"
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=200,
+        content={
+            "success": True,
+            "message": message,
+            "data": data,
+            "pagination": {
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": (total + page_size - 1) // page_size
+            }
+        }
+    )
+
+MYSQL DATABASE SCHEMA
+Complete Schema SQL
+sql-- ============================================
+-- CORE TABLES
+-- ============================================
+
+-- Users table (all user types)
+CREATE TABLE users (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    user_type ENUM('advisor', 'affiliate', 'admin') NOT NULL,
+    is_verified BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    lockout_until DATETIME NULL,
+    failed_login_attempts INT DEFAULT 0,
+    last_login DATETIME NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_email (email),
+    INDEX idx_user_type (user_type),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Email verification tokens
+CREATE TABLE verification_tokens (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    token_type ENUM('email_verification', 'password_reset', 'mfa_setup') NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_token (token),
+    INDEX idx_user_id (user_id),
+    INDEX idx_expires_at (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- MFA secrets for admin accounts
+CREATE TABLE mfa_secrets (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) UNIQUE NOT NULL,
+    secret_key VARCHAR(255) NOT NULL,
+    backup_codes JSON NOT NULL,
+    is_enabled BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Refresh tokens
+CREATE TABLE refresh_tokens (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    token_hash VARCHAR(255) UNIQUE NOT NULL,
+    expires_at DATETIME NOT NULL,
+    revoked BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_token_hash (token_hash),
+    INDEX idx_user_id (user_id),
+    INDEX idx_expires_at (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- ADVISOR TABLES
+-- ============================================
+
+-- Advisor profiles
+CREATE TABLE advisor_profiles (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) UNIQUE NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    mobile VARCHAR(20) NOT NULL,
+    organization VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    city VARCHAR(100),
+    photo_url VARCHAR(500),
+    logo_url VARCHAR(500),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    profile_locked_at DATETIME NULL,
+    is_profile_locked BOOLEAN DEFAULT FALSE,
+    grace_period_expires_at DATETIME NULL,
+    referred_by VARCHAR(36) NULL COMMENT 'Affiliate ID if referred',
+    signup_source ENUM('organic', 'affiliate') DEFAULT 'organic',
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_referred_by (referred_by),
+    INDEX idx_signup_source (signup_source)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Profile update requests (for locked fields)
+CREATE TABLE profile_update_requests (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    field_name VARCHAR(100) NOT NULL,
+    old_value TEXT,
+    new_value TEXT NOT NULL,
+    reason TEXT,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    requested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    reviewed_by VARCHAR(36) NULL,
+    reviewed_at DATETIME NULL,
+    review_notes TEXT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- SUBSCRIPTION TABLES
+-- ============================================
+
+-- Subscription tiers configuration
+CREATE TABLE subscription_tiers (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    tier_name VARCHAR(50) UNIQUE NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    price_original DECIMAL(10,2) NOT NULL,
+    price_launch DECIMAL(10,2) NOT NULL,
+    report_limit INT NOT NULL,
+    features JSON NOT NULL COMMENT 'Array of feature IDs',
+    is_active BOOLEAN DEFAULT TRUE,
+    display_order INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_tier_name (tier_name),
+    INDEX idx_is_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- User subscriptions
+CREATE TABLE subscriptions (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    tier_id VARCHAR(36) NOT NULL,
+    status ENUM('trial', 'active', 'active_no_reports', 'expired', 'cancelled') NOT NULL,
+    start_date DATETIME NOT NULL,
+    end_date DATETIME NOT NULL,
+    report_limit INT NOT NULL,
+    reports_used INT DEFAULT 0,
+    is_auto_renew BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (tier_id) REFERENCES subscription_tiers(id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status),
+    INDEX idx_end_date (end_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Form selections (for Starter+, Specialist+ tiers)
+CREATE TABLE form_selections (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    subscription_id VARCHAR(36) NOT NULL,
+    selected_forms JSON NOT NULL COMMENT 'Array of form IDs',
+    locked_at DATETIME NULL,
+    is_locked BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE CASCADE,
+    INDEX idx_subscription_id (subscription_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Trial accounts
+CREATE TABLE trial_accounts (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) UNIQUE NOT NULL,
+    started_at DATETIME NOT NULL,
+    expires_at DATETIME NOT NULL,
+    reports_used INT DEFAULT 0,
+    report_limit INT DEFAULT 5,
+    status ENUM('active', 'expired', 'converted') DEFAULT 'active',
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status),
+    INDEX idx_expires_at (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- PAYMENT TABLES
+-- ============================================
+
+-- Payments
+CREATE TABLE payments (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    subscription_id VARCHAR(36),
+    amount_gross DECIMAL(10,2) NOT NULL,
+    gst_amount DECIMAL(10,2) NOT NULL,
+    gateway_fee DECIMAL(10,2) NOT NULL,
+    amount_net DECIMAL(10,2) NOT NULL COMMENT 'After GST and gateway fee',
+    payment_gateway ENUM('razorpay', 'stripe') NOT NULL,
+    gateway_transaction_id VARCHAR(255) UNIQUE,
+    gateway_order_id VARCHAR(255),
+    payment_method VARCHAR(50),
+    status ENUM('pending', 'success', 'failed', 'refunded') NOT NULL,
+    invoice_number VARCHAR(50) UNIQUE,
+    invoice_url VARCHAR(500),
+    paid_at DATETIME NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (subscription_id) REFERENCES subscriptions(id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status),
+    INDEX idx_gateway_transaction_id (gateway_transaction_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Refunds
+CREATE TABLE refunds (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    payment_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    reason TEXT,
+    status ENUM('pending', 'approved', 'rejected', 'processed') DEFAULT 'pending',
+    gateway_refund_id VARCHAR(255),
+    requested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    processed_at DATETIME NULL,
+    processed_by VARCHAR(36) NULL COMMENT 'Admin user ID',
+    notes TEXT NULL,
+    FOREIGN KEY (payment_id) REFERENCES payments(id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    INDEX idx_payment_id (payment_id),
+    INDEX idx_status (status),
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- REPORT TABLES
+-- ============================================
+
+-- Form submissions (input data)
+CREATE TABLE form_submissions (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    form_type VARCHAR(50) NOT NULL,
+    client_name VARCHAR(255) NOT NULL,
+    form_data JSON NOT NULL COMMENT 'All form inputs',
+    calculation_results JSON COMMENT 'Calculation outputs',
+    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_form_type (form_type),
+    INDEX idx_submitted_at (submitted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Generated reports
+CREATE TABLE generated_reports (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    submission_id VARCHAR(36),
+    form_type VARCHAR(50) NOT NULL,
+    client_name VARCHAR(255) NOT NULL,
+    pdf_url VARCHAR(500) NOT NULL,
+    pdf_size_kb INT,
+    language VARCHAR(10) DEFAULT 'en',
+    generated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL COMMENT '3 months retention',
+    is_deleted BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (submission_id) REFERENCES form_submissions(id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_expires_at (expires_at),
+    INDEX idx_form_type (form_type),
+    INDEX idx_generated_at (generated_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Form drafts (autosave)
+CREATE TABLE form_drafts (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    form_type VARCHAR(50) NOT NULL,
+    draft_data JSON NOT NULL,
+    last_saved_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_form (user_id, form_type),
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- AFFILIATE TABLES
+-- ============================================
+
+-- Affiliates
+CREATE TABLE affiliates (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) UNIQUE NOT NULL,
+    unique_code VARCHAR(20) UNIQUE NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    mobile VARCHAR(20) NOT NULL,
+    company_name VARCHAR(255),
+    bio TEXT,
+    photo_url VARCHAR(500),
+    logo_url VARCHAR(500),
+    status ENUM('pending', 'approved', 'rejected', 'suspended') DEFAULT 'pending',
+    rejection_reason TEXT NULL,
+    approved_by VARCHAR(36) NULL COMMENT 'Admin user ID',
+    approved_at DATETIME NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_unique_code (unique_code),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Affiliate landing page customization
+CREATE TABLE affiliate_landing_pages (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    affiliate_id VARCHAR(36) UNIQUE NOT NULL,
+    custom_headline VARCHAR(255),
+    special_offer TEXT,
+    custom_message TEXT,
+    cta_text VARCHAR(100) DEFAULT 'Start Your Free Trial',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (affiliate_id) REFERENCES affiliates(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Referrals
+CREATE TABLE referrals (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    affiliate_id VARCHAR(36) NOT NULL,
+    referred_user_id VARCHAR(36) NOT NULL,
+    signup_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    conversion_date DATETIME NULL,
+    subscription_id VARCHAR(36) NULL,
+    status ENUM('signed_up', 'trial', 'converted', 'churned') DEFAULT 'signed_up',
+    FOREIGN KEY (affiliate_id) REFERENCES affiliates(id),
+    FOREIGN KEY (referred_user_id) REFERENCES users(id),
+    FOREIGN KEY (subscription_id) REFERENCES subscriptions(id),
+    INDEX idx_affiliate_id (affiliate_id),
+    INDEX idx_referred_user_id (referred_user_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Commission structure (default and custom)
+CREATE TABLE commission_plans (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    plan_name VARCHAR(100) NOT NULL,
+    is_default BOOLEAN DEFAULT FALSE,
+    tier_1_threshold DECIMAL(10,2) DEFAULT 100000.00,
+    tier_1_rate DECIMAL(5,2) DEFAULT 20.00,
+    tier_2_threshold DECIMAL(10,2) DEFAULT 200000.00,
+    tier_2_rate DECIMAL(5,2) DEFAULT 25.00,
+    tier_3_threshold DECIMAL(10,2) DEFAULT 400000.00,
+    tier_3_rate DECIMAL(5,2) DEFAULT 30.00,
+    tier_4_rate DECIMAL(5,2) DEFAULT 40.00,
+    renewal_rate DECIMAL(5,2) DEFAULT 10.00,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Affiliate commission plan assignments
+CREATE TABLE affiliate_commission_assignments (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    affiliate_id VARCHAR(36) UNIQUE NOT NULL,
+    commission_plan_id VARCHAR(36) NOT NULL,
+    custom_rate DECIMAL(5,2) NULL COMMENT 'Override rate if set',
+    effective_from DATETIME DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT,
+    FOREIGN KEY (affiliate_id) REFERENCES affiliates(id) ON DELETE CASCADE,
+    FOREIGN KEY (commission_plan_id) REFERENCES commission_plans(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Commissions
+CREATE TABLE commissions (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    affiliate_id VARCHAR(36) NOT NULL,
+    referral_id VARCHAR(36) NOT NULL,
+    payment_id VARCHAR(36) NOT NULL,
+    transaction_type ENUM('new_subscription', 'renewal', 'upgrade') NOT NULL,
+    amount_gross DECIMAL(10,2) NOT NULL,
+    amount_net DECIMAL(10,2) NOT NULL COMMENT 'After GST and gateway fee',
+    commission_rate DECIMAL(5,2) NOT NULL,
+    commission_amount DECIMAL(10,2) NOT NULL,
+    status ENUM('pending_approval', 'approved', 'rejected', 'paid') DEFAULT 'pending_approval',
+    approved_by VARCHAR(36) NULL,
+    approved_at DATETIME NULL,
+    rejected_by VARCHAR(36) NULL,
+    rejected_at DATETIME NULL,
+    rejection_reason TEXT NULL,
+    payout_id VARCHAR(36) NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (affiliate_id) REFERENCES affiliates(id),
+    FOREIGN KEY (referral_id) REFERENCES referrals(id),
+    FOREIGN KEY (payment_id) REFERENCES payments(id),
+    INDEX idx_affiliate_id (affiliate_id),
+    INDEX idx_status (status),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Payouts
+CREATE TABLE payouts (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    affiliate_id VARCHAR(36) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    commission_count INT NOT NULL,
+    payment_method VARCHAR(50),
+    transaction_id VARCHAR(255),
+    bank_account_id VARCHAR(36),
+    status ENUM('pending', 'processing', 'completed', 'failed') DEFAULT 'pending',
+    processed_by VARCHAR(36) NULL,
+    processed_at DATETIME NULL,
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (affiliate_id) REFERENCES affiliates(id),
+    INDEX idx_affiliate_id (affiliate_id),
+    INDEX idx_status (status),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Affiliate bank accounts
+CREATE TABLE affiliate_bank_accounts (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    affiliate_id VARCHAR(36) NOT NULL,
+    account_holder_name VARCHAR(255) NOT NULL,
+    bank_name VARCHAR(255) NOT NULL,
+    account_number VARCHAR(50) NOT NULL,
+    ifsc_code VARCHAR(20) NOT NULL,
+    account_type ENUM('savings', 'current') DEFAULT 'savings',
+    is_primary BOOLEAN DEFAULT TRUE,
+    is_verified BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (affiliate_id) REFERENCES affiliates(id) ON DELETE CASCADE,
+    INDEX idx_affiliate_id (affiliate_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- INTERNATIONALIZATION
+-- ============================================
+
+-- Supported languages
+CREATE TABLE supported_languages (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    language_code VARCHAR(10) UNIQUE NOT NULL,
+    language_name VARCHAR(100) NOT NULL,
+    native_name VARCHAR(100) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_default BOOLEAN DEFAULT FALSE,
+    display_order INT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Translations
+CREATE TABLE translations (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    translation_key VARCHAR(255) NOT NULL,
+    language_code VARCHAR(10) NOT NULL,
+    translation_value TEXT NOT NULL,
+    module VARCHAR(50) COMMENT 'auth, report, payment, etc.',
+    context TEXT COMMENT 'Additional context for translators',
+    last_updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by VARCHAR(36),
+    UNIQUE KEY unique_key_lang (translation_key, language_code),
+    INDEX idx_language_code (language_code),
+    INDEX idx_module (module)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- STORAGE & FILES
+-- ============================================
+
+-- File metadata
+CREATE TABLE file_metadata (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    file_type ENUM('advisor_photo', 'advisor_logo', 'report_pdf', 'document') NOT NULL,
+    original_filename VARCHAR(255) NOT NULL,
+    stored_filename VARCHAR(255) NOT NULL,
+    storage_path VARCHAR(500) NOT NULL,
+    file_size_bytes BIGINT NOT NULL,
+    mime_type VARCHAR(100),
+    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NULL,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_file_type (file_type),
+    INDEX idx_expires_at (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- NOTIFICATION TABLES
+-- ============================================
+
+-- Notification templates
+CREATE TABLE notification_templates (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    template_key VARCHAR(100) UNIQUE NOT NULL,
+    notification_type ENUM('email', 'sms', 'push') NOT NULL,
+    language_code VARCHAR(10) NOT NULL,
+    subject VARCHAR(255) COMMENT 'For email',
+    body_text TEXT NOT NULL,
+    body_html TEXT COMMENT 'For email',
+    variables JSON COMMENT 'List of variables used in template',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_template_key (template_key),
+    INDEX idx_language_code (language_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Notification queue (for tracking sent notifications)
+CREATE TABLE notification_queue (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36),
+    notification_type ENUM('email', 'sms', 'push') NOT NULL,
+    recipient VARCHAR(255) NOT NULL,
+    subject VARCHAR(255),
+    body TEXT NOT NULL,
+    status ENUM('pending', 'sent', 'failed', 'bounced') DEFAULT 'pending',
+    error_message TEXT NULL,
+    scheduled_for DATETIME NULL,
+    sent_at DATETIME NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_status (status),
+    INDEX idx_scheduled_for (scheduled_for),
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- CONFIGURATION TABLES
+-- ============================================
+
+-- System configuration
+CREATE TABLE system_config (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    config_key VARCHAR(100) UNIQUE NOT NULL,
+    config_value JSON NOT NULL,
+    description TEXT,
+    is_public BOOLEAN DEFAULT FALSE COMMENT 'Can be accessed by frontend',
+    updated_by VARCHAR(36),
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Feature flags
+CREATE TABLE feature_flags (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    flag_key VARCHAR(100) UNIQUE NOT NULL,
+    flag_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    is_enabled BOOLEAN DEFAULT FALSE,
+    rollout_percentage INT DEFAULT 0 COMMENT '0-100',
+    target_user_types JSON COMMENT 'Array of user types',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_flag_key (flag_key),
+    INDEX idx_is_enabled (is_enabled)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- INDEXES FOR PERFORMANCE
+-- ============================================
+
+-- Composite indexes for common queries
+CREATE INDEX idx_subscriptions_user_status ON subscriptions(user_id, status);
+CREATE INDEX idx_payments_user_status ON payments(user_id, status);
+CREATE INDEX idx_referrals_affiliate_status ON referrals(affiliate_id, status);
+CREATE INDEX idx_commissions_affiliate_status ON commissions(affiliate_id, status);
+CREATE INDEX idx_reports_user_expires ON generated_reports(user_id, expires_at);
+
+MONGODB COLLECTIONS SCHEMA
+javascript// audit_logs collection
+{
+  _id: ObjectId,
+  user_id: String,  // UUID from MySQL
+  user_type: String, // 'advisor', 'affiliate', 'admin'
+  action: String,    // 'login', 'report_generated', 'subscription_changed', etc.
+  entity_type: String, // 'subscription', 'payment', 'report', etc.
+  entity_id: String,   // UUID of the entity
+  changes: {
+    before: Object,  // State before change
+    after: Object    // State after change
+  },
+  ip_address: String,
+  user_agent: String,
+  timestamp: ISODate,
+  metadata: Object   // Additional context
+}
+
+// activity_logs collection (lighter weight than audit)
+{
+  _id: ObjectId,
+  user_id: String,
+  session_id: String,
+  event_type: String,  // 'page_view', 'button_click', 'form_submit', etc.
+  event_data: Object,
+  timestamp: ISODate,
+  client_info: {
+    ip: String,
+    country: String,
+    device: String,
+    browser: String
+  }
+}
+
+// calculation_logs collection
+{
+  _id: ObjectId,
+  user_id: String,
+  form_type: String,
+  inputs: Object,       // All input parameters
+  outputs: Object,      // Calculated results
+  calculation_time_ms: Number,
+  timestamp: ISODate,
+  version: String       // Calculation engine version
+}
+
+// analytics_events collection
+{
+  _id: ObjectId,
+  event_name: String,
+  user_id: String,
+  session_id: String,
+  properties: Object,
+  timestamp: ISODate
+}
+
+// error_logs collection
+{
+  _id: ObjectId,
+  error_type: String,
+  error_message: String,
+  stack_trace: String,
+  user_id: String,
+  endpoint: String,
+  request_body: Object,
+  timestamp: ISODate,
+  environment: String   // 'development', 'staging', 'production'
+}
+
+COMPLETE MICROSERVICES IMPLEMENTATION
+1. AUTH SERVICE
+services/auth-service/app/main.py
+pythonfrom fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
+import uvicorn
+
+from .api.v1 import auth_router
+from .core.config import settings
+from .middleware.rate_limiter import RateLimitMiddleware
+
+app = FastAPI(
+    title="Auth Service",
+    version="1.0.0",
+    docs_url="/api/v1/auth/docs",
+    redoc_url="/api/v1/auth/redoc"
+)
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Rate limiting
+app.add_middleware(RateLimitMiddleware)
+
+# Include routers
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["authentication"])
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "auth-service"}
+
+if __name__ == "__main__":
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8001, reload=True)
+services/auth-service/app/api/v1/endpoints.py
+pythonfrom fastapi import APIRouter, Depends, HTTPException, status, Header
+from sqlalchemy.orm import Session
+from typing import Optional
+from datetime import datetime, timedelta
+
+from ....shared.database.mysql_base import get_db_session
+from ....shared.database.redis_client import cache
+from ....shared.utils.security import hash_password, verify_password, generate_verification_token
+from ....shared.utils.jwt_handler import create_access_token, create_refresh_token, decode_token
+from ....shared.utils.response import success_response, error_response
+
+from ..schemas import (
+    RegisterRequest, LoginRequest, RefreshTokenRequest,
+    PasswordResetRequest, VerifyEmailRequest
+)
+from ..services import AuthService
+from ..models import User, VerificationToken
+
+router = APIRouter()
+
+# ============================================
+# REGISTRATION
+# ============================================
+
+@router.post("/register")
+async def register(
+    request: RegisterRequest,
+    accept_language: Optional[str] = Header(default="en", alias="Accept-Language"),
+    db: Session = Depends(get_db_session)
+):
+    """
+    Register new user (advisor or affiliate)
+    
+    Request Body:
+    {
+        "user_type": "advisor",  // or "affiliate"
+        "email": "user@example.com",
+        "password": "SecurePass123!",
+        "full_name": "John Doe",
+        "mobile": "9876543210",
+        "organization": "ABC Financial",  // For advisors
+        "role": "Financial Advisor",       // For advisors
+        "city": "Mumbai",
+        "terms_accepted": true,
+        "privacy_accepted": true
+    }
+    
+    Response:
+    {
+        "success": true,
+        "message": "Registration successful. Please verify your email.",
+        "data": {
+            "user_id": "uuid",
+            "email": "user@example.com",
+            "verification_sent": true
+        }
+    }
+    """
+    auth_service = AuthService(db, accept_language)
+    
+    try:
+        result = await auth_service.register_user(request)
+        return success_response(
+            data=result,
+            message=auth_service.translate("registration_successful")
+        )
+    except ValueError as e:
+        return error_response(str(e), status_code=400)
+    except Exception as e:
+        return error_response(
+            auth_service.translate("registration_failed"),
+            status_code=500
+        )
+
+
+@router.post("/verify-email")
+async def verify_email(
+    request: VerifyEmailRequest,
+    accept_language: Optional[str] = Header(default="en"),
+    db: Session = Depends(get_db_session)
+):
+    """
+    Verify email address
+    
+    Request Body:
+    {
+        "token": "verification_token_from_email"
+    }
+    
+    Response:
+    {
+        "success": true,
+        "message": "Email verified successfully",
+        "data": {
+            "email": "user@example.com",
+            "is_verified": true
+        }
+    }
+    """
+    auth_service = AuthService(db, accept_language)
+    
+    try:
+        result = await auth_service.verify_email(request.token)
+        return success_response(
+            data=result,
+            message=auth_service.translate("email_verified")
+        )
+    except ValueError as e:
+        return error_response(str(e), status_code=400)
+
+
+# ============================================
+# LOGIN
+# ============================================
+
+@router.post("/login")
+async def login(
+    request: LoginRequest,
+    accept_language: Optional[str] = Header(default="en"),
+    db: Session = Depends(get_db_session)
+):
+    """
+    User login
+    
+    Request Body:
+    {
+        "email": "user@example.com",
+        "password": "SecurePass123!",
+        "remember_me": false
+    }
+    
+    Response:
+    {
+        "success": true,
+        "message": "Login successful",
+        "data": {
+            "access_token": "jwt_access_token",
+            "refresh_token": "jwt_refresh_token",
+            "token_type": "bearer",
+            "expires_in": 1800,
+            "user": {
+                "user_id": "uuid",
+                "email": "user@example.com",
+                "user_type": "advisor",
+                "full_name": "John Doe",
+                "is_verified": true
+            }
+        }
+    }
+    """
+    auth_service = AuthService(db, accept_language)
+    
+    try:
+        result = await auth_service.login(request)
+        return success_response(
+            data=result,
+            message=auth_service.translate("login_successful")
+        )
+    except ValueError as e:
+        return error_response(str(e), status_code=401)
+
+
+@router.post("/refresh")
+async def refresh_token(
+    request: RefreshTokenRequest,
+    db: Session = Depends(get_db_session)
+):
+    """
+    Refresh access token
+    
+    Request Body:
+    {
+        "refresh_token": "jwt_refresh_token"
+    }
+    
+    Response:
+    {
+        "success": true,
+        "message": "Token refreshed",
+        "data": {
+            "access_token": "new_jwt_access_token",
+            "expires_in": 1800
+        }
+    }
+    """
+    auth_service = AuthService(db)
+    
+    try:
+        result = await auth_service.refresh_access_token(request.refresh_token)
+        return success_response(data=result)
+    except ValueError as e:
+        return error_response(str(e), status_code=401)
+
+
+@router.post("/logout")
+async def logout(
+    authorization: str = Header(...),
+    db: Session = Depends(get_db_session)
+):
+    """
+    User logout (revokes refresh token)
+    
+    Headers:
+    Authorization: Bearer <access_token>
+    
+    Response:
+    {
+        "success": true,
+        "message": "Logged out successfully"
+    }
+    """
+    try:
+        token = authorization.replace("Bearer ", "")
+        auth_service = AuthService(db)
+        await auth_service.logout(token)
+        return success_response(message="Logged out successfully")
+    except Exception as e:
+        return error_response(str(e), status_code=400)
+
+
+# ============================================
+# PASSWORD RESET
+# ============================================
+
+@router.post("/password-reset/request")
+async def request_password_reset(
+    request: PasswordResetRequest,
+    accept_language: Optional[str] = Header(default="en"),
+    db: Session = Depends(get_db_session)
+):
+    """
+    Request password reset
+    
+    Request Body:
+    {
+        "email": "user@example.com"
+    }
+    
+    Response:
+    {
+        "success": true,
+        "message": "Password reset link sent to your email"
+    }
+    """
+    auth_service = AuthService(db, accept_language)
+    
+    try:
+        await auth_service.request_password_reset(request.email)
+        return success_response(
+            message=auth_service.translate("password_reset_sent")
+        )
+    except Exception as e:
+        # Don't reveal if email exists
+        return success_response(
+            message=auth_service.translate("password_reset_sent")
+        )
+
+
+@router.post("/password-reset/confirm")
+async def confirm_password_reset(
+    token: str,
+    new_password: str,
+    accept_language: Optional[str] = Header(default="en"),
+    db: Session = Depends(get_db_session)
+):
+    """
+    Reset password with token
+    
+    Request Body:
+    {
+        "token": "reset_token_from_email",
+        "new_password": "NewSecurePass123!"
+    }
+    
+    Response:
+    {
+        "success": true,
+        "message": "Password reset successful"
+    }
+    """
+    auth_service = AuthService(db, accept_language)
+    
+    try:
+        await auth_service.reset_password(token, new_password)
+        return success_response(
+            message=auth_service.translate("password_reset_success")
+        )
+    except ValueError as e:
+        return error_response(str(e), status_code=400)
+
+
+# ============================================
+# MFA (For Admin Accounts)
+# ============================================
+
+@router.post("/mfa/setup")
+async def setup_mfa(
+    authorization: str = Header(...),
+    db: Session = Depends(get_db_session)
+):
+    """
+    Setup MFA for admin accounts
+    
+    Headers:
+    Authorization: Bearer <access_token>
+    
+    Response:
+    {
+        "success": true,
+        "message": "MFA setup initiated",
+        "data": {
+            "qr_code_url": "data:image/png;base64,...",
+            "secret": "BASE32SECRET",
+            "backup_codes": ["code1", "code2", ...]
+        }
+    }
+    """
+    try:
+        token = authorization.replace("Bearer ", "")
+        payload = decode_token(token)
+        
+        if payload.get("user_type") != "admin":
+            return error_response("MFA is only for admin accounts", status_code=403)
+        
+        auth_service = AuthService(db)
+        result = await auth_service.setup_mfa(payload["user_id"])
+        return success_response(data=result)
+    except Exception as e:
+        return error_response(str(e), status_code=400)
+
+
+@router.post("/mfa/verify")
+async def verify_mfa(
+    code: str,
+    authorization: str = Header(...),
+    db: Session = Depends(get_db_session)
+):
+    """
+    Verify MFA code
+    
+    Request Body:
+    {
+        "code": "123456"  // 6-digit code from authenticator app
+    }
+    
+    Response:
+    {
+        "success": true,
+        "message": "MFA verification successful",
+        "data": {
+            "mfa_verified": true
+        }
+    }
+    """
+    try:
+        token = authorization.replace("Bearer ", "")
+        payload = decode_token(token)
+        
+        auth_service = AuthService(db)
+        result = await auth_service.verify_mfa(payload["user_id"], code)
+        return success_response(data=result)
+    except ValueError as e:
+        return error_response(str(e), status_code=401)
+(Continue with remaining 10+ microservices? This is becoming very long. Should I provide the complete structure for 2-3 key services with all endpoints, or provide a comprehensive summary of all services with key endpoints listed?)
+Let me know and I'll continue with the production-ready implementation including:
+
+User Service (complete)
+Subscription Service (complete)
+Payment Service (complete)
+Calculation Service (all 8 forms)
+Report Generation Service
+Affiliate Service
+Admin Service
+Notification Service
+Storage Service
+i18n Service
+
+Plus:
+
+Docker Compose setup
+Celery workers
+API documentation
