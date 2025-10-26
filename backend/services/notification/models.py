@@ -16,6 +16,7 @@ class Notification(Base):
     status = Column(String(20), default="queued")  # queued|sent|failed
     error = Column(Text, nullable=True)
     read = Column(Boolean, default=False)
+    archived = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     sent_at = Column(DateTime, nullable=True)
 

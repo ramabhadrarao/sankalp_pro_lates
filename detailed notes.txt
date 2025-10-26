@@ -1,0 +1,1121 @@
+SalahkaarPro Backend API - Complete Endpoint Documentation
+
+Comprehensive API Reference with Purpose & Implementation Notes
+
+
+Table of Contents
+
+Auth Service (Port: 8001)
+User Service (Port: 8002)
+Subscription Service (Port: 8003)
+Payment Service (Port: 8004)
+Calculation Service (Port: 8005)
+Report Service (Port: 8006)
+Form Data Service (Port: 8007)
+Affiliate Service (Port: 8008)
+Admin Service (Port: 8009)
+Notification Service (Port: 8010)
+Storage Service (Port: 8011)
+I18n Service (Port: 8012)
+Pro Features Service (Port: 8013)
+
+
+1. Auth Service (Port: 8001)
+
+Purpose: Handle all authentication, authorization, and security operations including user registration, login, JWT token management, password reset, and MFA.
+
+
+1.1 POST /api/v1/auth/register
+Purpose: Register a new user (advisor or affiliate) in the system.
+Authentication: None (Public)
+Request Body:
+json{
+  "user_type": "advisor",  // or "affiliate"
+  "email": "user@example.com",
+  "password": "SecurePass123!",
+  "full_name": "John Doe",
+  "mobile": "9876543210",
+  "organization": "ABC Financial Services",  // Required for advisors
+  "role": "Financial Advisor",              // Required for advisors
+  "city": "Mumbai",
+  "terms_accepted": true,
+  "privacy_accepted": true,
+  "referral_code": "AFF_12345"  // Optional: if user came via affiliate
+}
+Response:
+json{
+  "success": true,
+  "message": "Registration successful. Please verify your email.",
+  "data": {
+    "user_id": "uuid-here",
+    "email": "user@example.com",
+    "user_type": "advisor",
+    "verification_sent": true
+  }
+}
+Implementation Notes:
+
+Validate email format and uniqueness
+Hash password using bcrypt
+Create user record in users table
+Create advisor_profile or affiliate record based on user_type
+Generate verification token and store in verification_tokens table
+Send verification email asynchronously via Celery task
+If referral_code provided, link to affiliate in advisor_profiles.referred_by
+Return user_id for tracking purposes
+
+Error Scenarios:
+
+400: Email already exists
+400: Invalid email format
+400: Weak password (< 8 chars, no special chars)
+400: Missing required fields
+500: Database error
+
+
+1.2 POST /api/v1/auth/verify-email
+Purpose: Verify user's email address using the token sent via email.
+Authentication: None (Public)
+Request Body:
+json{
+  "token": "verification_token_from_email"
+}
+Response:
+json{
+  "success": true,
+  "message": "Email verified successfully",
+  "data": {
+    "email": "user@example.com",
+    "is_verified": true
+  }
+}
+Implementation Notes:
+
+Look up token in verification_tokens table
+Check token hasn't expired (24 hours validity)
+Check token hasn't been used already
+Update users.is_verified = TRUE
+Mark token as used in verification_tokens.used = TRUE
+Send welcome email asynchronously
+Log audit event in MongoDB
+
+Error Scenarios:
+
+400: Invalid or expired token
+400: Token already used
+404: Token not found
+
+
+1.3 POST /api/v1/auth/resend-verification
+Purpose: Resend email verification link if user didn't receive or token expired.
+Authentication: None (Public)
+Request Body:
+json{
+  "email": "user@example.com"
+}
+Response:
+json{
+  "success": true,
+  "message": "Verification email sent successfully"
+}
+Implementation Notes:
+
+Check if user exists and email is not already verified
+Invalidate any existing unused verification tokens for this user
+Generate new verification token
+Send new verification email
+Rate limit: Max 3 resend requests per hour per email
+
+Error Scenarios:
+
+400: Email already verified
+404: User not found
+429: Too many resend attempts
+
+
+1.4 POST /api/v1/auth/login
+Purpose: Authenticate user and issue JWT tokens (access + refresh).
+Authentication: None (Public)
+Request Body:
+json{
+  "email": "user@example.com",
+  "password": "SecurePass123!",
+  "remember_me": false  // If true, longer refresh token validity
+}
+Response:
+json{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIs...",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+    "token_type": "bearer",
+    "expires_in": 1800,  // 30 minutes
+    "user": {
+      "user_id": "uuid",
+      "email": "user@example.com",
+      "user_type": "advisor",
+      "full_name": "John Doe",
+      "is_verified": true,
+      "requires_mfa": false  // true for admin
+    }
+  }
+}
+```
+
+**Implementation Notes**:
+- Verify email and password
+- Check if account is active (`users.is_active = TRUE`)
+- Check if account is locked out (`users.lockout_until`)
+- Check if email is verified (`users.is_verified = TRUE`)
+- If admin user, check if MFA is enabled and return `requires_mfa: true`
+- Reset failed login attempts on success
+- Update `users.last_login` timestamp
+- Generate JWT access token (30 min) and refresh token (7 days or 30 days if remember_me)
+- Store refresh token hash in `refresh_tokens` table
+- Log login event in MongoDB `audit_logs`
+
+**Error Scenarios**:
+- 401: Invalid credentials
+- 401: Email not verified
+- 403: Account locked due to too many failed attempts
+- 403: Account deactivated
+
+**Security Features**:
+- Failed login attempts counter
+- Account lockout after 5 failed attempts (15 minutes)
+- Bcrypt password verification
+
+---
+
+### **1.5 POST `/api/v1/auth/logout`**
+
+**Purpose**: Logout user by revoking their refresh token.
+
+**Authentication**: Required (Bearer token)
+
+**Headers**:
+```
+Authorization: Bearer <access_token>
+Response:
+json{
+  "success": true,
+  "message": "Logged out successfully"
+}
+Implementation Notes:
+
+Extract user_id from JWT token
+Mark all active refresh tokens as revoked for this user
+Update refresh_tokens.revoked = TRUE
+Log logout event in MongoDB
+Client should delete stored tokens
+
+Error Scenarios:
+
+401: Invalid or expired token
+
+
+1.6 POST /api/v1/auth/refresh
+Purpose: Get a new access token using a valid refresh token.
+Authentication: None (uses refresh token)
+Request Body:
+json{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
+}
+Response:
+json{
+  "success": true,
+  "message": "Token refreshed successfully",
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIs...",
+    "expires_in": 1800
+  }
+}
+Implementation Notes:
+
+Decode and verify refresh token signature
+Check if token is not expired
+Hash the token and lookup in refresh_tokens table
+Check if token is not revoked
+Generate new access token with same claims
+Return new access token only (refresh token remains same)
+
+Error Scenarios:
+
+401: Invalid refresh token
+401: Expired refresh token
+401: Revoked refresh token
+
+
+1.7 POST /api/v1/auth/password-reset/request
+Purpose: Send password reset link to user's email.
+Authentication: None (Public)
+Request Body:
+json{
+  "email": "user@example.com"
+}
+Response:
+json{
+  "success": true,
+  "message": "If this email exists, a password reset link has been sent"
+}
+Implementation Notes:
+
+Always return success message (don't reveal if email exists - security)
+If user exists, generate password reset token
+Store token in verification_tokens table with type 'password_reset'
+Token expires in 1 hour
+Send password reset email asynchronously
+Rate limit: Max 3 requests per hour per email
+Log request in MongoDB
+
+Error Scenarios:
+
+429: Too many reset requests
+
+Security Notes:
+
+Don't reveal whether email exists or not
+Use time-constant comparison for token validation
+
+
+1.8 POST /api/v1/auth/password-reset/confirm
+Purpose: Reset password using the token from email.
+Authentication: None (Public)
+Request Body:
+json{
+  "token": "reset_token_from_email",
+  "new_password": "NewSecurePass123!"
+}
+Response:
+json{
+  "success": true,
+  "message": "Password reset successful. Please login with your new password."
+}
+Implementation Notes:
+
+Validate token existence and expiry
+Check token not already used
+Validate new password strength
+Hash new password with bcrypt
+Update users.password_hash
+Mark token as used
+Revoke all refresh tokens for this user (logout all devices)
+Send password changed confirmation email
+Log password reset in MongoDB
+
+Error Scenarios:
+
+400: Invalid or expired token
+400: Weak password
+400: Token already used
+
+
+1.9 POST /api/v1/auth/change-password
+Purpose: Change password when user is logged in.
+Authentication: Required (Bearer token)
+Request Body:
+json{
+  "old_password": "OldPass123!",
+  "new_password": "NewSecurePass123!"
+}
+Response:
+json{
+  "success": true,
+  "message": "Password changed successfully"
+}
+Implementation Notes:
+
+Extract user_id from JWT
+Verify old password is correct
+Validate new password strength
+Check new password different from old password
+Hash new password
+Update database
+Revoke all other refresh tokens (logout other devices)
+Keep current session active
+Send password changed email notification
+Log password change in audit logs
+
+Error Scenarios:
+
+401: Incorrect old password
+400: New password too weak
+400: New password same as old password
+
+
+1.10 POST /api/v1/auth/mfa/setup
+Purpose: Setup Multi-Factor Authentication for admin accounts.
+Authentication: Required (Admin only)
+Response:
+json{
+  "success": true,
+  "message": "MFA setup initiated",
+  "data": {
+    "qr_code_url": "data:image/png;base64,iVBOR...",
+    "secret": "BASE32SECRETKEY",
+    "backup_codes": [
+      "12345678",
+      "87654321",
+      "11223344",
+      "44332211",
+      "55667788"
+    ]
+  }
+}
+Implementation Notes:
+
+Only available for admin users
+Generate TOTP secret using pyotp
+Generate QR code for secret
+Generate 5 backup codes (random 8-digit numbers)
+Store hashed secret and backup codes in mfa_secrets table
+MFA not enabled until first successful verification
+User must save backup codes securely
+
+Error Scenarios:
+
+403: User is not admin
+409: MFA already enabled
+
+
+1.11 POST /api/v1/auth/mfa/verify
+Purpose: Verify MFA code (6-digit TOTP or backup code).
+Authentication: Required
+Request Body:
+json{
+  "code": "123456"  // 6-digit code from authenticator app or 8-digit backup code
+}
+Response:
+json{
+  "success": true,
+  "message": "MFA verification successful",
+  "data": {
+    "mfa_verified": true
+  }
+}
+Implementation Notes:
+
+Extract user_id from JWT
+Retrieve MFA secret from mfa_secrets table
+Verify TOTP code using pyotp (30-second window)
+If TOTP fails, check if it's a valid unused backup code
+If backup code used, mark it as used
+If this is first verification, enable MFA (mfa_secrets.is_enabled = TRUE)
+Log MFA verification in audit logs
+
+Error Scenarios:
+
+401: Invalid MFA code
+401: Backup code already used
+404: MFA not setup for this user
+
+Security Notes:
+
+Allow 30-second time window for TOTP
+Rate limit: Max 5 attempts per minute
+Lock account after 10 consecutive failures
+
+
+1.12 POST /api/v1/auth/mfa/disable
+Purpose: Disable MFA for admin account (requires verification).
+Authentication: Required (Admin only)
+Request Body:
+json{
+  "code": "123456"  // Current MFA code to confirm
+}
+Response:
+json{
+  "success": true,
+  "message": "MFA disabled successfully"
+}
+Implementation Notes:
+
+Verify current MFA code is correct
+Delete MFA secret from mfa_secrets table
+Log MFA disable event
+Send email notification about MFA being disabled
+
+Error Scenarios:
+
+401: Invalid MFA code
+403: Not admin user
+
+
+1.13 GET /api/v1/auth/me
+Purpose: Get current authenticated user's information.
+Authentication: Required (Bearer token)
+Response:
+json{
+  "success": true,
+  "data": {
+    "user_id": "uuid",
+    "email": "user@example.com",
+    "user_type": "advisor",
+    "is_verified": true,
+    "is_active": true,
+    "profile": {
+      "full_name": "John Doe",
+      "mobile": "9876543210",
+      "organization": "ABC Financial",
+      "role": "Financial Advisor",
+      "city": "Mumbai",
+      "photo_url": "https://...",
+      "logo_url": "https://...",
+      "is_profile_locked": false,
+      "grace_period_expires_at": null
+    }
+  }
+}
+Implementation Notes:
+
+Extract user_id from JWT
+Fetch user data from users table
+Join with advisor_profiles or affiliates based on user_type
+Return complete user profile
+Used by frontend to populate user context
+Cache this data in Redis for 5 minutes
+
+Error Scenarios:
+
+401: Invalid or expired token
+404: User not found
+
+
+1.14 GET /api/v1/auth/check-email
+Purpose: Check if email address already exists in the system.
+Authentication: None (Public)
+Query Parameters:
+
+email (required): Email to check
+
+Response:
+json{
+  "success": true,
+  "data": {
+    "exists": true
+  }
+}
+Implementation Notes:
+
+Query users table for email
+Return boolean exists flag
+Used for real-time validation during registration
+Cache results in Redis for 1 minute
+Rate limit: 10 requests per minute per IP
+
+Error Scenarios:
+
+400: Email parameter missing
+429: Too many requests
+
+
+2. User Service (Port: 8002)
+
+Purpose: Manage user profiles, advisor-specific data, profile photos/logos, grace period tracking, and user activity logs.
+
+
+2.1 GET /api/v1/users/profile
+Purpose: Get current user's complete profile information.
+Authentication: Required (Bearer token)
+Response:
+json{
+  "success": true,
+  "data": {
+    "user_id": "uuid",
+    "email": "user@example.com",
+    "user_type": "advisor",
+    "full_name": "John Doe",
+    "mobile": "9876543210",
+    "organization": "ABC Financial Services",
+    "role": "Financial Advisor",
+    "city": "Mumbai",
+    "photo_url": "https://cdn.salahkaarpro.com/photos/uuid.jpg",
+    "logo_url": "https://cdn.salahkaarpro.com/logos/uuid.png",
+    "is_profile_locked": false,
+    "profile_locked_at": null,
+    "grace_period_expires_at": null,
+    "created_at": "2025-01-15T10:30:00Z",
+    "updated_at": "2025-01-15T10:30:00Z"
+  }
+}
+Implementation Notes:
+
+Extract user_id from JWT token
+Fetch from users JOIN advisor_profiles
+Include grace period status
+Check if profile is locked
+Cache in Redis for 5 minutes
+Update cache on profile changes
+
+Error Scenarios:
+
+401: Invalid token
+404: Profile not found
+
+
+2.2 PUT /api/v1/users/profile
+Purpose: Update user profile (only allowed fields during grace period).
+Authentication: Required (Bearer token)
+Request Body:
+json{
+  "full_name": "John Updated Doe",
+  "mobile": "9876543210",
+  "email": "newemail@example.com",
+  "organization": "New Org",  // Only if within grace period
+  "role": "Senior Advisor",   // Only if within grace period
+  "city": "Delhi"
+}
+Response:
+json{
+  "success": true,
+  "message": "Profile updated successfully",
+  "data": {
+    "updated_profile": { /* updated fields */ }
+  }
+}
+Implementation Notes:
+
+Check if user is within 72-hour grace period
+Allowed always: mobile, email (with verification)
+Allowed only in grace period: full_name, organization, role, city
+If critical fields changed after grace period, reject and suggest update request
+Validate email format and uniqueness
+If email changed, set is_verified = FALSE and send new verification
+Update advisor_profiles table
+Clear profile cache in Redis
+Log profile update in MongoDB audit_logs
+
+Error Scenarios:
+
+400: Grace period expired, cannot edit locked fields
+400: Email already in use
+400: Invalid mobile format
+403: Profile is locked
+
+
+2.3 POST /api/v1/users/profile/photo
+Purpose: Upload or update user profile photo.
+Authentication: Required (Bearer token)
+Request: multipart/form-data
+
+photo: Image file (JPEG, PNG, max 5MB)
+
+Response:
+json{
+  "success": true,
+  "message": "Photo uploaded successfully",
+  "data": {
+    "photo_url": "https://cdn.salahkaarpro.com/photos/uuid-timestamp.jpg"
+  }
+}
+Implementation Notes:
+
+Validate file type (JPEG, PNG only)
+Validate file size (max 5MB)
+Generate unique filename: {user_id}-{timestamp}.{ext}
+Compress/resize image to max 800x800px
+Upload to S3/Azure Blob Storage
+Delete old photo if exists
+Update advisor_profiles.photo_url
+Create record in file_metadata table
+Return CDN URL
+Clear profile cache
+
+Error Scenarios:
+
+400: Invalid file type
+400: File too large (>5MB)
+500: Upload failed
+
+Security Notes:
+
+Scan uploaded files for malware
+Generate random filenames (don't use user input)
+Set proper CORS and cache headers
+
+
+2.4 POST /api/v1/users/profile/logo
+Purpose: Upload or update company/organization logo.
+Authentication: Required (Bearer token)
+Request: multipart/form-data
+
+logo: Image file (JPEG, PNG, max 5MB)
+
+Response:
+json{
+  "success": true,
+  "message": "Logo uploaded successfully",
+  "data": {
+    "logo_url": "https://cdn.salahkaarpro.com/logos/uuid-timestamp.png"
+  }
+}
+Implementation Notes:
+
+Same validation as profile photo
+Resize to max 500x500px
+Prefer PNG for logos (transparency support)
+Upload to S3 in /logos folder
+Update advisor_profiles.logo_url
+Delete old logo if exists
+Logo appears on generated PDF reports
+
+Error Scenarios:
+
+Same as profile photo upload
+
+
+2.5 DELETE /api/v1/users/profile/photo
+Purpose: Remove profile photo.
+Authentication: Required (Bearer token)
+Response:
+json{
+  "success": true,
+  "message": "Photo deleted successfully"
+}
+Implementation Notes:
+
+Get current photo_url from database
+Delete file from S3
+Set advisor_profiles.photo_url = NULL
+Mark file as deleted in file_metadata
+Clear profile cache
+
+Error Scenarios:
+
+404: No photo to delete
+
+
+2.6 DELETE /api/v1/users/profile/logo
+Purpose: Remove company logo.
+Authentication: Required (Bearer token)
+Response:
+json{
+  "success": true,
+  "message": "Logo deleted successfully"
+}
+Implementation Notes:
+
+Same as photo deletion
+Update advisor_profiles.logo_url = NULL
+
+
+2.7 GET /api/v1/users/grace-period-status
+Purpose: Check if user is still within 72-hour grace period for profile editing.
+Authentication: Required (Bearer token)
+Response:
+json{
+  "success": true,
+  "data": {
+    "in_grace_period": true,
+    "grace_period_started": "2025-01-15T10:30:00Z",
+    "grace_period_expires_at": "2025-01-18T10:30:00Z",
+    "hours_remaining": 58,
+    "is_profile_locked": false
+  }
+}
+Implementation Notes:
+
+Calculate grace period from first paid subscription date
+Grace period = 72 hours from subscription payment
+After 72 hours, critical fields auto-lock
+If manually locked, show locked status
+Frontend uses this to show/hide edit options
+
+Error Scenarios:
+
+404: No subscription found
+
+
+2.8 POST /api/v1/users/profile/lock
+Purpose: Manually lock profile before grace period expires.
+Authentication: Required (Bearer token)
+Response:
+json{
+  "success": true,
+  "message": "Profile locked successfully. Contact admin for future changes."
+}
+Implementation Notes:
+
+Set advisor_profiles.is_profile_locked = TRUE
+Set advisor_profiles.profile_locked_at = NOW()
+Clear grace_period_expires_at
+Log action in audit logs
+User cannot unlock themselves (must request admin)
+
+Error Scenarios:
+
+400: Profile already locked
+
+Use Case:
+
+User finished editing and wants to lock immediately
+Prevents accidental changes
+
+
+2.9 POST /api/v1/users/profile/update-request
+Purpose: Request to update locked profile fields (requires admin approval).
+Authentication: Required (Bearer token)
+Request Body:
+json{
+  "field_name": "full_name",
+  "old_value": "John Doe",
+  "new_value": "Jonathan Doe",
+  "reason": "Legal name correction - typo in original registration"
+}
+Response:
+json{
+  "success": true,
+  "message": "Update request submitted for admin review",
+  "data": {
+    "request_id": "uuid",
+    "status": "pending",
+    "submitted_at": "2025-01-20T10:30:00Z"
+  }
+}
+Implementation Notes:
+
+Create record in profile_update_requests table
+Status = 'pending'
+Send email notification to admin
+User can track request status
+Admin will review and approve/reject
+Only one pending request per field at a time
+
+Allowed Fields:
+
+full_name
+organization
+role
+mobile (with verification)
+
+Error Scenarios:
+
+400: Field not allowed for updates
+400: Profile not locked (use direct update)
+409: Pending request already exists for this field
+
+
+2.10 GET /api/v1/users/profile/update-requests
+Purpose: Get list of user's profile update requests with status.
+Authentication: Required (Bearer token)
+Response:
+json{
+  "success": true,
+  "data": [
+    {
+      "request_id": "uuid",
+      "field_name": "full_name",
+      "old_value": "John Doe",
+      "new_value": "Jonathan Doe",
+      "reason": "Legal name correction",
+      "status": "pending",
+      "requested_at": "2025-01-20T10:30:00Z",
+      "reviewed_at": null,
+      "reviewed_by": null,
+      "review_notes": null
+    }
+  ]
+}
+Implementation Notes:
+
+Fetch from profile_update_requests WHERE user_id
+Order by requested_at DESC
+Include status (pending/approved/rejected)
+Show admin notes if rejected
+
+Error Scenarios:
+
+None (returns empty array if no requests)
+
+
+2.11 GET /api/v1/users/activity-log
+Purpose: Get user's activity history (logins, report generations, profile changes).
+Authentication: Required (Bearer token)
+Query Parameters:
+
+page (optional, default: 1)
+limit (optional, default: 20, max: 100)
+
+Response:
+json{
+  "success": true,
+  "data": [
+    {
+      "activity_id": "uuid",
+      "action": "report_generated",
+      "description": "Generated Term Insurance report for Rajesh Kumar",
+      "ip_address": "103.x.x.x",
+      "user_agent": "Mozilla/5.0...",
+      "timestamp": "2025-01-20T15:30:00Z"
+    },
+    {
+      "activity_id": "uuid",
+      "action": "login",
+      "description": "User logged in",
+      "ip_address": "103.x.x.x",
+      "timestamp": "2025-01-20T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 150,
+    "page": 1,
+    "page_size": 20,
+    "total_pages": 8
+  }
+}
+Implementation Notes:
+
+Fetch from MongoDB activity_logs collection
+Filter by user_id
+Show last 90 days only
+Include: logins, logouts, report generations, profile changes, subscription changes
+Sort by timestamp DESC
+Cache count in Redis for 5 minutes
+
+Error Scenarios:
+
+401: Invalid token
+
+Use Case:
+
+User can see their own activity
+Useful for security auditing
+Help identify unauthorized access
+
+
+2.12 GET /api/v1/users/dashboard-stats
+Purpose: Get user dashboard statistics (reports used, subscription status, quick metrics).
+Authentication: Required (Bearer token)
+Response:
+json{
+  "success": true,
+  "data": {
+    "subscription": {
+      "tier_name": "Starter Plus",
+      "status": "active",
+      "expires_at": "2025-02-15T23:59:59Z",
+      "days_remaining": 26
+    },
+    "reports": {
+      "total_limit": 50,
+      "used": 23,
+      "remaining": 27,
+      "percentage_used": 46
+    },
+    "quick_stats": {
+      "total_clients": 15,
+      "reports_this_month": 12,
+      "last_report_generated": "2025-01-20T15:30:00Z"
+    }
+  }
+}
+Implementation Notes:
+
+Fetch subscription from subscriptions table
+Get report count from generated_reports table
+Calculate days remaining
+Count unique clients from submissions
+Cache for 5 minutes in Redis
+Update cache on report generation
+
+Error Scenarios:
+
+401: Invalid token
+
+Use Case:
+
+Homepage dashboard display
+Quick overview for user
+Alert if nearing report limit
+
+
+2.13 GET /api/v1/users/search 🔒 Admin Only
+Purpose: Search users by email, name, or mobile (admin function).
+Authentication: Required (Admin only)
+Query Parameters:
+
+q: Search query
+type: user_type filter (advisor/affiliate)
+status: active/inactive filter
+page: Page number (default: 1)
+limit: Items per page (default: 20)
+
+Response:
+json{
+  "success": true,
+  "data": [
+    {
+      "user_id": "uuid",
+      "email": "user@example.com",
+      "user_type": "advisor",
+      "full_name": "John Doe",
+      "mobile": "9876543210",
+      "organization": "ABC Financial",
+      "is_active": true,
+      "subscription_tier": "Starter Plus",
+      "created_at": "2025-01-15T10:30:00Z"
+    }
+  ],
+  "pagination": { /* ... */ }
+}
+Implementation Notes:
+
+Search in users, advisor_profiles, affiliates tables
+Match on: email (exact), full_name (LIKE), mobile (exact)
+Join with subscriptions to show tier
+Admin can search all users
+Use full-text search for better performance
+
+Error Scenarios:
+
+403: Not admin user
+
+
+2.14 GET /api/v1/users/{user_id} 🔒 Admin Only
+Purpose: Get complete details of any user by ID (admin function).
+Authentication: Required (Admin only)
+Response:
+json{
+  "success": true,
+  "data": {
+    "user": { /* user details */ },
+    "subscription": { /* current subscription */ },
+    "subscription_history": [ /* past subscriptions */ ],
+    "payments": [ /* payment history */ ],
+    "reports": {
+      "total_generated": 45,
+      "by_type": {
+        "term_insurance": 12,
+        "retirement": 8
+      }
+    },
+    "activity_summary": {
+      "last_login": "2025-01-20T10:00:00Z",
+      "total_logins": 87
+    }
+  }
+}
+Implementation Notes:
+
+Fetch complete user profile
+Include subscription details
+Show payment history
+Show report generation stats
+Show activity summary
+Admin full visibility
+
+Error Scenarios:
+
+403: Not admin
+404: User not found
+
+
+2.15 PUT /api/v1/users/{user_id}/profile 🔒 Admin Only
+Purpose: Update any user's profile (admin override).
+Authentication: Required (Admin only)
+Request Body:
+json{
+  "full_name": "New Name",
+  "organization": "New Org",
+  "mobile": "9999999999",
+  "email": "newemail@example.com",
+  "any_field": "any_value"
+}
+Response:
+json{
+  "success": true,
+  "message": "User profile updated successfully",
+  "data": {
+    "updated_profile": { /* updated data */ }
+  }
+}
+Implementation Notes:
+
+Admin can update any field regardless of grace period
+Admin can update locked profiles
+Log admin action in audit_logs with admin_user_id
+Send email notification to user about admin update
+Clear user's cache
+
+Error Scenarios:
+
+403: Not admin
+404: User not found
+400: Invalid data
+
+
+2.16 POST /api/v1/users/{user_id}/activate 🔒 Admin Only
+Purpose: Activate a deactivated user account.
+Authentication: Required (Admin only)
+Response:
+json{
+  "success": true,
+  "message": "User account activated successfully"
+}
+Implementation Notes:
+
+Set users.is_active = TRUE
+Clear any lockout
+Log activation in audit_logs
+Send activation email to user
+
+Error Scenarios:
+
+403: Not admin
+404: User not found
+400: User already active
+
+
+2.17 POST /api/v1/users/{user_id}/deactivate 🔒 Admin Only
+Purpose: Deactivate a user account.
+Authentication: Required (Admin only)
+Request Body:
+json{
+  "reason": "Policy violation - spamming"
+}
+Response:
+json{
+  "success": true,
+  "message": "User account deactivated successfully"
+}
+Implementation Notes:
+
+Set users.is_active = FALSE
+Revoke all refresh tokens
+User cannot login
+Subscriptions remain but cannot generate reports
+Log deactivation with reason
+Send email notification to user
+
+Error Scenarios:
+
+403: Not admin
+404: User not found
+
+
+2.18 GET /api/v1/users/referral-info
+Purpose: Get user's referral information (if they were referred by an affiliate).
+Authentication: Required (Bearer token)
+Response:
+json{
+  "success": true,
+  "data": {
+    "was_referred": true,
+    "referred_by": {
+      "affiliate_name": "Marketing Pro Agency",
+      "affiliate_code": "AFF_12345"
+    },
+    "signup_date": "2025-01-15T10:30:00Z"
+  }
+}
+Implementation Notes:
+
+Check advisor_profiles.referred_by
+If not null, fetch affiliate details
+Show who referred this user
+Used for transparency
+
+Error Scenarios:
+
+401: Invalid token

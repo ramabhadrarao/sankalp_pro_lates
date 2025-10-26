@@ -187,4 +187,67 @@ def update_prefs(req: PreferencesUpdateRequest, user: User = Depends(require_aut
     db.commit()
     return PreferencesResponse(email_enabled=pref.email_enabled, sms_enabled=pref.sms_enabled)
 
+# NEW: delete notification
+@router.delete("/notifications/{notification_id}")
+def delete_notification(notification_id: int, user: User = Depends(require_auth), db: Session = Depends(get_session)):
+    rec = db.get(Notification, notification_id)
+    if not rec or rec.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(rec)
+    db.commit()
+    return {"deleted": True}
+
+# NEW: archive notification
+@router.put("/notifications/{notification_id}/archive")
+def archive_notification(notification_id: int, user: User = Depends(require_auth), db: Session = Depends(get_session)):
+    rec = db.get(Notification, notification_id)
+    if not rec or rec.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Not found")
+    rec.archived = True
+    db.commit()
+    return {"archived": True}
+
+# NEW: unarchive notification
+@router.put("/notifications/{notification_id}/unarchive")
+def unarchive_notification(notification_id: int, user: User = Depends(require_auth), db: Session = Depends(get_session)):
+    rec = db.get(Notification, notification_id)
+    if not rec or rec.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Not found")
+    rec.archived = False
+    db.commit()
+    return {"archived": False}
+
+# NEW: mark all as read
+@router.put("/notifications/mark-all-read")
+def mark_all_read(user: User = Depends(require_auth), db: Session = Depends(get_session)):
+    stmt = select(Notification).where(Notification.user_id == user.id, Notification.read == False)
+    rows = db.scalars(stmt).all()
+    count = 0
+    for r in rows:
+        r.read = True
+        count += 1
+    db.commit()
+    return {"updated_count": count}
+
+# NEW: create template
+@router.post("/notifications/templates")
+def create_template(req: TemplateCreateRequest, admin: User = Depends(require_admin), db: Session = Depends(get_session)):
+    exists = db.scalars(select(NotificationTemplate).where(NotificationTemplate.key == req.key, NotificationTemplate.language == req.language)).first()
+    if exists:
+        raise HTTPException(status_code=400, detail="Template exists")
+    tpl = NotificationTemplate(key=req.key, type=req.type, language=req.language, subject=req.subject, body_text=req.body_text, body_html=req.body_html)
+    db.add(tpl)
+    db.commit()
+    return {"created": True}
+
+# NEW: delete template
+@router.delete("/notifications/template/{template_key}")
+def delete_template(template_key: str, language: str = "en", admin: User = Depends(require_admin), db: Session = Depends(get_session)):
+    tpl = db.scalars(select(NotificationTemplate).where(NotificationTemplate.key == template_key, NotificationTemplate.language == language)).first()
+    if not tpl:
+        raise HTTPException(status_code=404, detail="Template not found")
+    db.delete(tpl)
+    db.commit()
+    return {"deleted": True}
+
 app.include_router(router)

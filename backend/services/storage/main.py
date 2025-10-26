@@ -146,4 +146,60 @@ def cleanup_expired(admin: User = Depends(require_admin), db: Session = Depends(
     db.commit()
     return {"deleted_count": count}
 
+# NEW: List deleted files
+@router.get("/storage/my-deleted", response_model=FilesResponse)
+def my_deleted(type: str | None = None, page: int = 1, user: User = Depends(require_auth), db: Session = Depends(get_session)):
+    stmt = select(StorageFile).where(StorageFile.user_id == user.id, StorageFile.deleted == True).order_by(desc(StorageFile.created_at)).offset((page-1)*20).limit(20)
+    if type:
+        stmt = stmt.where(StorageFile.file_type == type)
+    rows = db.scalars(stmt).all()
+    return FilesResponse(files=[FileItem(id=r.id, filename=r.filename, file_type=r.file_type, url=r.url, created_at=r.created_at.isoformat()) for r in rows])
+
+# NEW: Restore deleted file
+@router.post("/storage/restore/{file_id}")
+def restore(file_id: int, user: User = Depends(require_auth), db: Session = Depends(get_session)):
+    rec = db.get(StorageFile, file_id)
+    if not rec or rec.user_id != user.id or not rec.deleted:
+        raise HTTPException(status_code=404, detail="Not found")
+    if not os.path.exists(rec.path):
+        raise HTTPException(status_code=409, detail="File missing on disk")
+    rec.deleted = False
+    db.commit()
+    return {"restored": True}
+
+# NEW: Purge deleted file permanently
+@router.delete("/storage/purge/{file_id}")
+def purge(file_id: int, user: User = Depends(require_auth), db: Session = Depends(get_session)):
+    rec = db.get(StorageFile, file_id)
+    if not rec or rec.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Not found")
+    try:
+        if os.path.exists(rec.path):
+            os.remove(rec.path)
+    except Exception:
+        pass
+    db.delete(rec)
+    db.commit()
+    return {"purged": True}
+
+# NEW: Rename a file
+@router.post("/storage/rename/{file_id}")
+def rename(file_id: int, new_name: str, user: User = Depends(require_auth), db: Session = Depends(get_session)):
+    rec = db.get(StorageFile, file_id)
+    if not rec or rec.user_id != user.id or rec.deleted:
+        raise HTTPException(status_code=404, detail="Not found")
+    if not os.path.exists(rec.path):
+        raise HTTPException(status_code=409, detail="File missing on disk")
+    dir_path = os.path.dirname(rec.path)
+    ts_prefix = os.path.basename(rec.path).split("_", 1)[0]
+    new_path = os.path.join(dir_path, f"{ts_prefix}_{new_name}")
+    try:
+        os.rename(rec.path, new_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Rename failed: {str(e)}")
+    rec.path = new_path
+    rec.filename = new_name
+    db.commit()
+    return {"renamed": True, "filename": rec.filename}
+
 app.include_router(router)

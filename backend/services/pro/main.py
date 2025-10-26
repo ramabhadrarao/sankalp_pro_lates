@@ -47,6 +47,18 @@ def daily_horoscope(sign: str, date: str):
     summary = f"A reflective day for {sign}. Focus on clarity and balance."
     return HoroscopeResponse(sign=sign, date=date, summary=summary)
 
+# NEW: Weekly horoscope (stub)
+@router.get("/pro/horoscope/weekly", response_model=HoroscopeResponse)
+def weekly_horoscope(sign: str, week_start: str):
+    summary = f"A productive week ahead for {sign}. Plan and execute wisely."
+    return HoroscopeResponse(sign=sign, date=week_start, summary=summary)
+
+# NEW: Monthly horoscope (stub)
+@router.get("/pro/horoscope/monthly", response_model=HoroscopeResponse)
+def monthly_horoscope(sign: str, month: str):
+    summary = f"A month of growth for {sign}. Embrace opportunities and learning."
+    return HoroscopeResponse(sign=sign, date=month, summary=summary)
+
 # Planning Sessions CRUD
 @router.post("/pro/planning-sessions", response_model=PlanningSessionItem)
 def create_session(req: PlanningSessionCreateRequest, user: User = Depends(require_auth), db: Session = Depends(get_session)):

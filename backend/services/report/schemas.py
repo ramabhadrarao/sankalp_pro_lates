@@ -30,6 +30,10 @@ class ShareReportResponse(BaseModel):
     shared: bool
     recipients: List[str]
 
+# NEW: List shared response
+class SharedListResponse(BaseModel):
+    recipients: List[str]
+
 class TemplatesResponse(BaseModel):
     templates: List[str]
 
@@ -40,6 +44,20 @@ class PreviewReportRequest(BaseModel):
 class PreviewReportResponse(BaseModel):
     summary: str
     charts_data: Dict[str, List[float]]
+
+// NEW: Duplicate report response
+class DuplicateReportResponse(BaseModel):
+    report_id: str
+    pdf_url: str
+
+# NEW: Email report request/response
+class EmailReportRequest(BaseModel):
+    emails: List[str]
+    message: Optional[str] = None
+
+class EmailReportResponse(BaseModel):
+    sent: bool
+    recipients: List[str]
 
 class ReportStatisticsResponse(BaseModel):
     total_reports: int

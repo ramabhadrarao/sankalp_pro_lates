@@ -35,6 +35,15 @@ class TemplateUpdateRequest(BaseModel):
     body_text: Optional[str] = None
     body_html: Optional[str] = None
 
+# NEW: create template request
+class TemplateCreateRequest(BaseModel):
+    key: str
+    type: str
+    language: str = "en"
+    subject: Optional[str] = None
+    body_text: Optional[str] = None
+    body_html: Optional[str] = None
+
 class TestEmailRequest(BaseModel):
     template_key: str
     test_email: str

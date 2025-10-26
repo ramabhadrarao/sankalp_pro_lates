@@ -32,3 +32,17 @@ class UpsertTranslationRequest(BaseModel):
     key: str
     language: str
     text: str
+
+class LanguageCreateRequest(BaseModel):
+    code: str
+    name: str
+    enabled: bool = True
+    is_default: bool = False
+
+class TranslationListItem(BaseModel):
+    key: str
+    language: str
+    text: str
+
+class TranslationListResponse(BaseModel):
+    strings: List[TranslationListItem]

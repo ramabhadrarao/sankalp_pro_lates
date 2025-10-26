@@ -83,6 +83,17 @@ def delete_report(report_id: str, user= require_auth):
 def share_report(report_id: str, payload: ShareReportRequest, user= require_auth):
     return ShareReportResponse(shared=True, recipients=payload.emails)
 
+# NEW: Revoke share
+@router.delete("/reports/{report_id}/share")
+def revoke_share(report_id: str, user= require_auth):
+    return {"revoked": True, "report_id": report_id}
+
+# NEW: List shared recipients
+@router.get("/reports/{report_id}/shared", response_model=SharedListResponse)
+def list_shared(report_id: str, user= require_auth):
+    # Stub: return empty list since no persistence
+    return SharedListResponse(recipients=[])
+
 # 86: Templates (admin)
 @router.get("/reports/templates", response_model=TemplatesResponse)
 def list_templates(user= require_auth):
@@ -94,6 +105,19 @@ def list_templates(user= require_auth):
 def preview_report(req: PreviewReportRequest, user= require_auth):
     charts = {"growth": [100, 120, 140, 165, 190]}
     return PreviewReportResponse(summary=f"Preview of {req.report_type}", charts_data=charts)
+
+# NEW: Duplicate report
+@router.post("/reports/{report_id}/duplicate", response_model=DuplicateReportResponse)
+def duplicate_report(report_id: str, user= require_auth):
+    new_id = f"RPT-{int(datetime.utcnow().timestamp())}-copy"
+    url = f"https://cdn.salahkaarpro.com/reports/{new_id}.pdf"
+    return DuplicateReportResponse(report_id=new_id, pdf_url=url)
+
+# NEW: Email report
+@router.post("/reports/{report_id}/email", response_model=EmailReportResponse)
+def email_report(report_id: str, req: EmailReportRequest, user= require_auth):
+    # Stub email sending
+    return EmailReportResponse(sent=True, recipients=req.emails)
 
 # 88: Statistics
 @router.get("/reports/statistics", response_model=ReportStatisticsResponse)
