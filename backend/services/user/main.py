@@ -251,4 +251,10 @@ def referral_info(user: User = Depends(require_auth)):
     link = f"https://salahkaarpro.com/partners/{user.id}"
     return ReferralInfoResponse(referred_by=None, referral_link=link)
 
+@router.post("/users/profile/lock", response_model=ProfileLockResponse)
+def lock_profile(user: User = Depends(require_auth), db: Session = Depends(get_session)):
+    ok, locked_at = lock_profile_fields(db, user.id)
+    log_action(db, user.id, "lock_profile", {"locked_at": locked_at.isoformat()})
+    return ProfileLockResponse(locked=ok, locked_at=locked_at)
+
 app.include_router(router)

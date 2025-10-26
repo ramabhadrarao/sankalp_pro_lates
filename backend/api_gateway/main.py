@@ -46,6 +46,10 @@ async def proxy_users(path: str, request: Request):
 async def proxy_subscription(path: str, request: Request):
     return await proxy(request, SUBSCRIPTION_SERVICE_URL, f"api/v1/{path}")
 
+@app.api_route("/api/v1/subscriptions/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+async def proxy_subscriptions(path: str, request: Request):
+    return await proxy(request, SUBSCRIPTION_SERVICE_URL, f"api/v1/{path}")
+
 @app.api_route("/api/v1/payments/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_payments(path: str, request: Request):
     return await proxy(request, PAYMENT_SERVICE_URL, f"api/v1/{path}")
@@ -69,7 +73,24 @@ async def proxy_affiliates(path: str, request: Request):
 
 @app.api_route("/api/v1/admin/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_admin(path: str, request: Request):
-    return await proxy(request, ADMIN_SERVICE_URL, f"api/v1/{path}")
+    # Dispatch admin requests to underlying services
+    segments = path.split("/", 1)
+    first = segments[0] if segments else ""
+    rest = segments[1] if len(segments) > 1 else ""
+
+    if first == "users":
+        # User admin endpoints live in User Service
+        return await proxy(request, USER_SERVICE_URL, f"api/v1/admin/{path}")
+    elif first == "affiliates":
+        # Affiliate admin endpoints live in Affiliate Service
+        return await proxy(request, AFFILIATE_SERVICE_URL, f"api/v1/admin/{path}")
+    elif first in ("subscription", "subscriptions"):
+        # Normalize plural to singular for Subscription admin paths
+        normalized = f"subscription/{rest}" if first == "subscriptions" else path
+        return await proxy(request, SUBSCRIPTION_SERVICE_URL, f"api/v1/admin/{normalized}")
+    else:
+        # Fallback: unsupported admin path (no dedicated Admin Service)
+        return JSONResponse(status_code=404, content={"detail": "Admin path not supported"})
 
 @app.api_route("/api/v1/notifications/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_notifications(path: str, request: Request):
