@@ -5,7 +5,7 @@ from typing import Optional, List
 from datetime import datetime
 
 from common.db.mysql import get_session, Base, engine
-from common.security.jwt import decode_token
+from common.security.jwt import decode_token, TokenError
 from common.i18n import t, get_locale
 
 from services.auth.models import User
@@ -51,11 +51,18 @@ def require_auth(authorization: str = Header(None), db: Session = Depends(get_se
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Unauthorized")
     token = authorization.split(" ", 1)[1]
-    payload = decode_token(token)
-    if not payload:
+    try:
+        payload = decode_token(token)
+    except TokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
     user_id = payload.get("sub")
-    user = db.get(User, user_id)
+    try:
+        user_id_int = int(user_id) if user_id is not None else None
+    except (TypeError, ValueError):
+        user_id_int = None
+    if user_id_int is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    user = db.get(User, user_id_int)
     if not user or not user.active:
         raise HTTPException(status_code=401, detail="Unauthorized")
     return user

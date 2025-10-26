@@ -40,15 +40,18 @@ async def proxy_auth(path: str, request: Request):
 
 @app.api_route("/api/v1/users/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_users(path: str, request: Request):
-    return await proxy(request, USER_SERVICE_URL, f"api/v1/{path}")
+    # Forward to service's /users/... endpoints
+    return await proxy(request, USER_SERVICE_URL, f"api/v1/users/{path}")
 
 @app.api_route("/api/v1/subscription/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_subscription(path: str, request: Request):
-    return await proxy(request, SUBSCRIPTION_SERVICE_URL, f"api/v1/{path}")
+    # Forward to service's /subscriptions/... endpoints
+    return await proxy(request, SUBSCRIPTION_SERVICE_URL, f"api/v1/subscriptions/{path}")
 
 @app.api_route("/api/v1/subscriptions/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_subscriptions(path: str, request: Request):
-    return await proxy(request, SUBSCRIPTION_SERVICE_URL, f"api/v1/{path}")
+    # Forward to service's /subscriptions/... endpoints
+    return await proxy(request, SUBSCRIPTION_SERVICE_URL, f"api/v1/subscriptions/{path}")
 
 @app.api_route("/api/v1/payments/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_payments(path: str, request: Request):
@@ -102,7 +105,8 @@ async def proxy_storage(path: str, request: Request):
 
 @app.api_route("/api/v1/i18n/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_i18n(path: str, request: Request):
-    return await proxy(request, I18N_SERVICE_URL, f"api/v1/{path}")
+    # Forward to service's /i18n/... endpoints
+    return await proxy(request, I18N_SERVICE_URL, f"api/v1/i18n/{path}")
 
 @app.api_route("/api/v1/pro/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_pro(path: str, request: Request):
