@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 from secrets import token_urlsafe
 
 from common.config import REFRESH_EXPIRES_MINUTES
-from .models import User, RefreshToken, EmailVerification, PasswordResetToken
+from services.auth.models import User, RefreshToken, EmailVerification, PasswordResetToken
 
 # Use a hashing scheme that avoids bcrypt backend issues
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
@@ -55,7 +55,11 @@ def get_valid_refresh_token(db: Session, token: str) -> RefreshToken | None:
     rt = db.scalar(stmt)
     if not rt:
         return None
-    if rt.expires_at < datetime.now(timezone.utc):
+    # Ensure consistent timezone handling: treat naive DB datetimes as UTC
+    expires_at = rt.expires_at
+    if getattr(expires_at, "tzinfo", None) is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < datetime.now(timezone.utc):
         return None
     return rt
 

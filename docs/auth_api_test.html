@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SalahkaarPro - Auth Service API Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .config-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .config-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .config-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .config-item {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .config-item label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .config-item input, .config-item select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .endpoints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 20px;
+        }
+
+        .endpoint-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .endpoint-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+
+        .method.post { background: #49cc90; }
+        .method.get { background: #61affe; }
+        .method.put { background: #fca130; }
+        .method.delete { background: #f93e3e; }
+
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            color: #333;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        .endpoint-description {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .response-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .response-section h4 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .response-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-info { background: #d1ecf1; color: #0c5460; }
+
+        .tab-container {
+            margin-top: 15px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .tab-button {
+            padding: 8px 15px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .tab-button.active {
+            background: white;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .tab-content {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 0 5px 5px 5px;
+            padding: 15px;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .example-json {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            float: right;
+            padding: 5px 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .token-display {
+            background: #fffbf0;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .token-display strong {
+            color: #856404;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 SalahkaarPro Auth Service API Tester</h1>
+
+        <!-- Configuration Section -->
+        <div class="config-section">
+            <h3>⚙️ API Configuration</h3>
+            <div class="config-group">
+                <div class="config-item">
+                    <label for="baseUrl">Base URL</label>
+                    <input type="text" id="baseUrl" value="http://localhost:8001" placeholder="http://localhost:8001">
+                </div>
+                <div class="config-item">
+                    <label for="apiVersion">API Version</label>
+                    <input type="text" id="apiVersion" value="/api/v1" readonly>
+                </div>
+                <div class="config-item">
+                    <label for="language">Language</label>
+                    <select id="language">
+                        <option value="en">English</option>
+                        <option value="hi">हिंदी (Hindi)</option>
+                        <option value="mr">मराठी (Marathi)</option>
+                        <option value="gu">ગુજરાતી (Gujarati)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="te">తెలుగు (Telugu)</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                        <option value="ml">മലയാളം (Malayalam)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="config-group">
+                <div class="config-item">
+                    <label for="storedAccessToken">Stored Access Token (Auto-filled after login)</label>
+                    <input type="text" id="storedAccessToken" placeholder="Will be auto-filled after successful login">
+                </div>
+                <div class="config-item">
+                    <label for="storedRefreshToken">Stored Refresh Token (Auto-filled after login)</label>
+                    <input type="text" id="storedRefreshToken" placeholder="Will be auto-filled after successful login">
+                </div>
+            </div>
+        </div>
+
+        <!-- API Endpoints Grid -->
+        <div class="endpoints-grid">
+
+            <!-- 1. REGISTER ENDPOINT -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/auth/register</span>
+                </div>
+                <p class="endpoint-description">Register a new advisor or affiliate account</p>
+                
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label>User Type *</label>
+                        <select name="user_type" required onchange="toggleRegistrationFields(this.value)">
+                            <option value="advisor">Advisor</option>
+                            <option value="affiliate">Affiliate</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" name="email" required placeholder="user@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" name="password" required placeholder="Min 8 chars, 1 uppercase, 1 number, 1 special">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" name="full_name" required placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mobile *</label>
+                        <input type="tel" name="mobile" required placeholder="9876543210" pattern="[0-9]{10}">
+                    </div>
+
+                    <div id="advisorFields">
+                        <div class="form-group">
+                            <label>Organization *</label>
+                            <input type="text" name="organization" placeholder="ABC Financial Services">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Role *</label>
+                            <input type="text" name="role" placeholder="Senior Financial Advisor">
+                        </div>
+
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" name="city" placeholder="Mumbai">
+                        </div>
+                    </div>
+
+                    <div id="affiliateFields" style="display:none;">
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" name="company_name" placeholder="XYZ Marketing Agency">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Why do you want to join?</label>
+                            <textarea name="why_join" placeholder="Describe your motivation..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="terms_accepted" required>
+                        <label>I accept the Terms & Conditions</label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="privacy_accepted" required>
+                        <label>I accept the Privacy Policy</label>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Register</button>
+                        <button type="button" class="btn-secondary" onclick="fillSampleData('register')">Fill Sample</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="registerResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'registerExample')">Example Request</button>
+                        <button class="tab-button" onclick="switchTab(this, 'registerCurl')">cURL</button>
+                    </div>
+                    <div id="registerExample" class="tab-pane active">
+                        <pre class="example-json">{
+    "user_type": "advisor",
+    "email": "john.doe@example.com",
+    "password": "SecurePass123!",
+    "full_name": "John Doe",
+    "mobile": "9876543210",
+    "organization": "ABC Financial Services",
+    "role": "Senior Financial Advisor",
+    "city": "Mumbai",
+    "terms_accepted": true,
+    "privacy_accepted": true
+}</pre>
+                    </div>
+                    <div id="registerCurl" class="tab-pane">
+                        <pre class="example-json">curl -X POST http://localhost:8001/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -H "Accept-Language: en" \
+  -d '{
+    "user_type": "advisor",
+    "email": "john.doe@example.com",
+    "password": "SecurePass123!",
+    "full_name": "John Doe",
+    "mobile": "9876543210",
+    "organization": "ABC Financial Services",
+    "role": "Senior Financial Advisor",
+    "city": "Mumbai",
+    "terms_accepted": true,
+    "privacy_accepted": true
+}'</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. LOGIN ENDPOINT -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/auth/login</span>
+                </div>
+                <p class="endpoint-description">Login with email and password</p>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" name="email" required placeholder="user@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" name="password" required placeholder="Your password">
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="remember_me">
+                        <label>Remember me</label>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Login</button>
+                        <button type="button" class="btn-secondary" onclick="fillSampleData('login')">Fill Sample</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="loginResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="token-display" id="tokenDisplay" style="display:none;">
+                    <strong>Access Token Saved!</strong> The token will be automatically used for authenticated requests.
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'loginExample')">Example Request</button>
+                        <button class="tab-button" onclick="switchTab(this, 'loginCurl')">cURL</button>
+                    </div>
+                    <div id="loginExample" class="tab-pane active">
+                        <pre class="example-json">{
+    "email": "john.doe@example.com",
+    "password": "SecurePass123!",
+    "remember_me": false
+}</pre>
+                    </div>
+                    <div id="loginCurl" class="tab-pane">
+                        <pre class="example-json">curl -X POST http://localhost:8001/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -H "Accept-Language: en" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "SecurePass123!",
+    "remember_me": false
+}'</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. VERIFY EMAIL ENDPOINT -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/auth/verify-email</span>
+                </div>
+                <p class="endpoint-description">Verify email address with token from email</p>
+                
+                <form id="verifyEmailForm">
+                    <div class="form-group">
+                        <label>Verification Token *</label>
+                        <input type="text" name="token" required placeholder="Token from verification email">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Verify Email</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="verifyEmailResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'verifyExample')">Example Request</button>
+                        <button class="tab-button" onclick="switchTab(this, 'verifyCurl')">cURL</button>
+                    </div>
+                    <div id="verifyExample" class="tab-pane active">
+                        <pre class="example-json">{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}</pre>
+                    </div>
+                    <div id="verifyCurl" class="tab-pane">
+                        <pre class="example-json">curl -X POST http://localhost:8001/api/v1/auth/verify-email \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "verification_token_from_email"
+}'</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. REFRESH TOKEN ENDPOINT -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/auth/refresh</span>
+                </div>
+                <p class="endpoint-description">Get new access token using refresh token</p>
+                
+                <form id="refreshForm">
+                    <div class="form-group">
+                        <label>Refresh Token *</label>
+                        <input type="text" name="refresh_token" id="refreshTokenInput" placeholder="Will use stored token or paste your own">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Refresh Token</button>
+                        <button type="button" class="btn-secondary" onclick="useStoredRefreshToken()">Use Stored Token</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="refreshResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'refreshExample')">Example Request</button>
+                        <button class="tab-button" onclick="switchTab(this, 'refreshCurl')">cURL</button>
+                    </div>
+                    <div id="refreshExample" class="tab-pane active">
+                        <pre class="example-json">{
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}</pre>
+                    </div>
+                    <div id="refreshCurl" class="tab-pane">
+                        <pre class="example-json">curl -X POST http://localhost:8001/api/v1/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refresh_token": "your_refresh_token_here"
+}'</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. REQUEST PASSWORD RESET -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/auth/password-reset/request</span>
+                </div>
+                <p class="endpoint-description">Request password reset link via email</p>
+                
+                <form id="passwordResetRequestForm">
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" name="email" required placeholder="user@example.com">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Request Reset</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="passwordResetRequestResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'resetRequestExample')">Example Request</button>
+                        <button class="tab-button" onclick="switchTab(this, 'resetRequestCurl')">cURL</button>
+                    </div>
+                    <div id="resetRequestExample" class="tab-pane active">
+                        <pre class="example-json">{
+    "email": "john.doe@example.com"
+}</pre>
+                    </div>
+                    <div id="resetRequestCurl" class="tab-pane">
+                        <pre class="example-json">curl -X POST http://localhost:8001/api/v1/auth/password-reset/request \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com"
+}'</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. CONFIRM PASSWORD RESET -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/auth/password-reset/confirm</span>
+                </div>
+                <p class="endpoint-description">Reset password with token from email</p>
+                
+                <form id="passwordResetConfirmForm">
+                    <div class="form-group">
+                        <label>Reset Token *</label>
+                        <input type="text" name="token" required placeholder="Token from reset email">
+                    </div>
+
+                    <div class="form-group">
+                        <label>New Password *</label>
+                        <input type="password" name="new_password" required placeholder="Min 8 chars, 1 uppercase, 1 number, 1 special">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Reset Password</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="passwordResetConfirmResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'resetConfirmExample')">Example Request</button>
+                        <button class="tab-button" onclick="switchTab(this, 'resetConfirmCurl')">cURL</button>
+                    </div>
+                    <div id="resetConfirmExample" class="tab-pane active">
+                        <pre class="example-json">{
+    "token": "reset_token_from_email",
+    "new_password": "NewSecurePass123!"
+}</pre>
+                    </div>
+                    <div id="resetConfirmCurl" class="tab-pane">
+                        <pre class="example-json">curl -X POST http://localhost:8001/api/v1/auth/password-reset/confirm \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "reset_token_from_email",
+    "new_password": "NewSecurePass123!"
+}'</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. LOGOUT ENDPOINT -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/auth/logout</span>
+                </div>
+                <p class="endpoint-description">Logout and revoke tokens (Requires authentication)</p>
+                
+                <form id="logoutForm">
+                    <div class="form-group">
+                        <label>Access Token</label>
+                        <input type="text" id="logoutToken" placeholder="Will use stored token or paste your own">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Logout</button>
+                        <button type="button" class="btn-secondary" onclick="useStoredAccessToken('logout')">Use Stored Token</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="logoutResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'logoutCurl')">cURL</button>
+                    </div>
+                    <div id="logoutCurl" class="tab-pane active">
+                        <pre class="example-json">curl -X POST http://localhost:8001/api/v1/auth/logout \
+  -H "Authorization: Bearer your_access_token_here"</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. MFA SETUP (Admin Only) -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/auth/mfa/setup</span>
+                </div>
+                <p class="endpoint-description">Setup MFA for admin accounts (Requires admin token)</p>
+                
+                <form id="mfaSetupForm">
+                    <div class="form-group">
+                        <label>Admin Access Token</label>
+                        <input type="text" id="mfaSetupToken" placeholder="Admin access token required">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Setup MFA</button>
+                        <button type="button" class="btn-secondary" onclick="useStoredAccessToken('mfaSetup')">Use Stored Token</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="mfaSetupResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'mfaSetupCurl')">cURL</button>
+                    </div>
+                    <div id="mfaSetupCurl" class="tab-pane active">
+                        <pre class="example-json">curl -X POST http://localhost:8001/api/v1/auth/mfa/setup \
+  -H "Authorization: Bearer admin_access_token_here"</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9. MFA VERIFY -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/auth/mfa/verify</span>
+                </div>
+                <p class="endpoint-description">Verify MFA code from authenticator app</p>
+                
+                <form id="mfaVerifyForm">
+                    <div class="form-group">
+                        <label>Access Token</label>
+                        <input type="text" id="mfaVerifyToken" placeholder="Access token required">
+                    </div>
+
+                    <div class="form-group">
+                        <label>MFA Code *</label>
+                        <input type="text" name="code" required placeholder="6-digit code" pattern="[0-9]{6}" maxlength="6">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Verify MFA</button>
+                        <button type="button" class="btn-secondary" onclick="useStoredAccessToken('mfaVerify')">Use Stored Token</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="mfaVerifyResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'mfaVerifyExample')">Example Request</button>
+                        <button class="tab-button" onclick="switchTab(this, 'mfaVerifyCurl')">cURL</button>
+                    </div>
+                    <div id="mfaVerifyExample" class="tab-pane active">
+                        <pre class="example-json">{
+    "code": "123456"
+}</pre>
+                    </div>
+                    <div id="mfaVerifyCurl" class="tab-pane">
+                        <pre class="example-json">curl -X POST http://localhost:8001/api/v1/auth/mfa/verify \
+  -H "Authorization: Bearer your_access_token_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "123456"
+}'</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10. RESEND VERIFICATION EMAIL -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/auth/resend-verification</span>
+                </div>
+                <p class="endpoint-description">Resend email verification link</p>
+                
+                <form id="resendVerificationForm">
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" name="email" required placeholder="user@example.com">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Resend Verification</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="resendVerificationResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'resendExample')">Example Request</button>
+                        <button class="tab-button" onclick="switchTab(this, 'resendCurl')">cURL</button>
+                    </div>
+                    <div id="resendExample" class="tab-pane active">
+                        <pre class="example-json">{
+    "email": "john.doe@example.com"
+}</pre>
+                    </div>
+                    <div id="resendCurl" class="tab-pane">
+                        <pre class="example-json">curl -X POST http://localhost:8001/api/v1/auth/resend-verification \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com"
+}'</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 11. CHANGE PASSWORD -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/auth/change-password</span>
+                </div>
+                <p class="endpoint-description">Change password for authenticated user</p>
+                
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label>Access Token</label>
+                        <input type="text" id="changePasswordToken" placeholder="Access token required">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Current Password *</label>
+                        <input type="password" name="old_password" required placeholder="Current password">
+                    </div>
+
+                    <div class="form-group">
+                        <label>New Password *</label>
+                        <input type="password" name="new_password" required placeholder="Min 8 chars, 1 uppercase, 1 number, 1 special">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Change Password</button>
+                        <button type="button" class="btn-secondary" onclick="useStoredAccessToken('changePassword')">Use Stored Token</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="changePasswordResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'changePasswordExample')">Example Request</button>
+                        <button class="tab-button" onclick="switchTab(this, 'changePasswordCurl')">cURL</button>
+                    </div>
+                    <div id="changePasswordExample" class="tab-pane active">
+                        <pre class="example-json">{
+    "old_password": "CurrentPass123!",
+    "new_password": "NewSecurePass123!"
+}</pre>
+                    </div>
+                    <div id="changePasswordCurl" class="tab-pane">
+                        <pre class="example-json">curl -X POST http://localhost:8001/api/v1/auth/change-password \
+  -H "Authorization: Bearer your_access_token_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "old_password": "CurrentPass123!",
+    "new_password": "NewSecurePass123!"
+}'</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 12. GET CURRENT USER -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/auth/me</span>
+                </div>
+                <p class="endpoint-description">Get current user details (Requires authentication)</p>
+                
+                <form id="getMeForm">
+                    <div class="form-group">
+                        <label>Access Token</label>
+                        <input type="text" id="getMeToken" placeholder="Access token required">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">Get User Info</button>
+                        <button type="button" class="btn-secondary" onclick="useStoredAccessToken('getMe')">Use Stored Token</button>
+                    </div>
+                </form>
+
+                <div class="response-section">
+                    <h4>Response:</h4>
+                    <div id="getMeResponse" class="response-box">Response will appear here...</div>
+                </div>
+
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab(this, 'getMeCurl')">cURL</button>
+                    </div>
+                    <div id="getMeCurl" class="tab-pane active">
+                        <pre class="example-json">curl -X GET http://localhost:8001/api/v1/auth/me \
+  -H "Authorization: Bearer your_access_token_here"</pre>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Global variables to store tokens
+        let storedAccessToken = '';
+        let storedRefreshToken = '';
+
+        // Helper function to get base URL
+        function getBaseUrl() {
+            return document.getElementById('baseUrl').value + document.getElementById('apiVersion').value;
+        }
+
+        // Helper function to get language
+        function getLanguage() {
+            return document.getElementById('language').value;
+        }
+
+        // Toggle registration fields based on user type
+        function toggleRegistrationFields(userType) {
+            const advisorFields = document.getElementById('advisorFields');
+            const affiliateFields = document.getElementById('affiliateFields');
+            
+            if (userType === 'advisor') {
+                advisorFields.style.display = 'block';
+                affiliateFields.style.display = 'none';
+                // Make advisor fields required
+                advisorFields.querySelectorAll('input').forEach(input => {
+                    if (input.name === 'organization' || input.name === 'role') {
+                        input.required = true;
+                    }
+                });
+                affiliateFields.querySelectorAll('input, textarea').forEach(input => {
+                    input.required = false;
+                });
+            } else {
+                advisorFields.style.display = 'none';
+                affiliateFields.style.display = 'block';
+                // Make affiliate fields optional
+                advisorFields.querySelectorAll('input').forEach(input => {
+                    input.required = false;
+                });
+            }
+        }
+
+        // Switch tabs
+        function switchTab(button, tabId) {
+            // Remove active from all buttons and tabs in this container
+            const container = button.closest('.tab-container');
+            container.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            // Add active to clicked button and corresponding tab
+            button.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Fill sample data
+        function fillSampleData(form) {
+            const sampleData = {
+                register: {
+                    email: 'test.advisor@example.com',
+                    password: 'TestPass123!',
+                    full_name: 'Test Advisor',
+                    mobile: '9876543210',
+                    organization: 'Test Financial Services',
+                    role: 'Financial Advisor',
+                    city: 'Mumbai'
+                },
+                login: {
+                    email: 'test.advisor@example.com',
+                    password: 'TestPass123!'
+                }
+            };
+
+            if (form === 'register') {
+                const formEl = document.getElementById('registerForm');
+                Object.keys(sampleData.register).forEach(key => {
+                    const input = formEl.querySelector(`[name="${key}"]`);
+                    if (input) input.value = sampleData.register[key];
+                });
+                formEl.querySelector('[name="terms_accepted"]').checked = true;
+                formEl.querySelector('[name="privacy_accepted"]').checked = true;
+            } else if (form === 'login') {
+                const formEl = document.getElementById('loginForm');
+                Object.keys(sampleData.login).forEach(key => {
+                    const input = formEl.querySelector(`[name="${key}"]`);
+                    if (input) input.value = sampleData.login[key];
+                });
+            }
+        }
+
+        // Use stored access token
+        function useStoredAccessToken(formType) {
+            const token = document.getElementById('storedAccessToken').value;
+            if (!token) {
+                alert('No stored access token found. Please login first.');
+                return;
+            }
+
+            if (formType === 'logout') {
+                document.getElementById('logoutToken').value = token;
+            } else if (formType === 'mfaSetup') {
+                document.getElementById('mfaSetupToken').value = token;
+            } else if (formType === 'mfaVerify') {
+                document.getElementById('mfaVerifyToken').value = token;
+            } else if (formType === 'changePassword') {
+                document.getElementById('changePasswordToken').value = token;
+            } else if (formType === 'getMe') {
+                document.getElementById('getMeToken').value = token;
+            }
+        }
+
+        // Use stored refresh token
+        function useStoredRefreshToken() {
+            const token = document.getElementById('storedRefreshToken').value;
+            if (!token) {
+                alert('No stored refresh token found. Please login first.');
+                return;
+            }
+            document.getElementById('refreshTokenInput').value = token;
+        }
+
+        // Generic API call function
+        async function makeApiCall(endpoint, method, data = null, token = null) {
+            const url = getBaseUrl() + endpoint;
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept-Language': getLanguage()
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const options = {
+                method: method,
+                headers: headers
+            };
+
+            if (data && method !== 'GET') {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const result = await response.json();
+                
+                return {
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: result
+                };
+            } catch (error) {
+                return {
+                    status: 500,
+                    statusText: 'Network Error',
+                    data: { error: error.message }
+                };
+            }
+        }
+
+        // Format response for display
+        function formatResponse(response, responseBoxId) {
+            const responseBox = document.getElementById(responseBoxId);
+            const statusClass = response.status >= 200 && response.status < 300 ? 'status-success' : 'status-error';
+            
+            let html = `<div class="status-badge ${statusClass}">Status: ${response.status} ${response.statusText}</div>`;
+            html += JSON.stringify(response.data, null, 2);
+            
+            responseBox.innerHTML = html;
+        }
+
+        // Setup form handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Register form
+            document.getElementById('registerForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    user_type: formData.get('user_type'),
+                    email: formData.get('email'),
+                    password: formData.get('password'),
+                    name: formData.get('full_name'), // map form field to API schema
+                    mobile: formData.get('mobile'),
+                    terms_accepted: formData.get('terms_accepted') ? true : false
+                };
+
+                if (data.user_type === 'advisor') {
+                    data.organization = formData.get('organization');
+                    data.role = formData.get('role');
+                    data.city = formData.get('city');
+                } else {
+                    data.company_name = formData.get('company_name');
+                    data.why_join = formData.get('why_join');
+                }
+
+                const response = await makeApiCall('/auth/register', 'POST', data);
+                formatResponse(response, 'registerResponse');
+            });
+
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    email: formData.get('email'),
+                    password: formData.get('password'),
+                    remember_me: formData.get('remember_me') ? true : false
+                };
+
+                const response = await makeApiCall('/auth/login', 'POST', data);
+                formatResponse(response, 'loginResponse');
+
+                // Store tokens if login successful
+                const payload = response?.data?.data ?? response?.data;
+                if (response.status === 200 && payload) {
+                    if (payload.access_token) {
+                        document.getElementById('storedAccessToken').value = payload.access_token;
+                        storedAccessToken = payload.access_token;
+                    }
+                    if (payload.refresh_token) {
+                        document.getElementById('storedRefreshToken').value = payload.refresh_token;
+                        storedRefreshToken = payload.refresh_token;
+                    }
+                    document.getElementById('tokenDisplay').style.display = 'block';
+                }
+            });
+
+            // Verify Email form
+            document.getElementById('verifyEmailForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    token: formData.get('token')
+                };
+
+                const response = await makeApiCall('/auth/verify-email', 'POST', data);
+                formatResponse(response, 'verifyEmailResponse');
+            });
+
+            // Refresh Token form
+            document.getElementById('refreshForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    refresh_token: formData.get('refresh_token')
+                };
+
+                const response = await makeApiCall('/auth/refresh', 'POST', data);
+                formatResponse(response, 'refreshResponse');
+
+                // Update stored access token if refresh successful
+                const payload = response?.data?.data ?? response?.data;
+                if (response.status === 200 && payload && payload.access_token) {
+                    document.getElementById('storedAccessToken').value = payload.access_token;
+                    storedAccessToken = payload.access_token;
+                }
+            });
+
+            // Password Reset Request form
+            document.getElementById('passwordResetRequestForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    email: formData.get('email')
+                };
+
+                const response = await makeApiCall('/auth/password-reset/request', 'POST', data);
+                formatResponse(response, 'passwordResetRequestResponse');
+            });
+
+            // Password Reset Confirm form
+            document.getElementById('passwordResetConfirmForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    token: formData.get('token'),
+                    new_password: formData.get('new_password')
+                };
+
+                const response = await makeApiCall('/auth/password-reset/confirm', 'POST', data);
+                formatResponse(response, 'passwordResetConfirmResponse');
+            });
+
+            // Logout form
+            document.getElementById('logoutForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const token = document.getElementById('logoutToken').value;
+                
+                if (!token) {
+                    alert('Please provide an access token');
+                    return;
+                }
+
+                const response = await makeApiCall('/auth/logout', 'POST', null, token);
+                formatResponse(response, 'logoutResponse');
+
+                // Clear stored tokens after logout
+                if (response.status === 200) {
+                    document.getElementById('storedAccessToken').value = '';
+                    document.getElementById('storedRefreshToken').value = '';
+                    storedAccessToken = '';
+                    storedRefreshToken = '';
+                }
+            });
+
+            // MFA Setup form
+            document.getElementById('mfaSetupForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const token = document.getElementById('mfaSetupToken').value;
+                
+                if (!token) {
+                    alert('Please provide an admin access token');
+                    return;
+                }
+
+                const response = await makeApiCall('/auth/mfa/setup', 'POST', null, token);
+                formatResponse(response, 'mfaSetupResponse');
+            });
+
+            // MFA Verify form
+            document.getElementById('mfaVerifyForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const token = document.getElementById('mfaVerifyToken').value;
+                const formData = new FormData(e.target);
+                const data = {
+                    code: formData.get('code')
+                };
+                
+                if (!token) {
+                    alert('Please provide an access token');
+                    return;
+                }
+
+                const response = await makeApiCall('/auth/mfa/verify', 'POST', data, token);
+                formatResponse(response, 'mfaVerifyResponse');
+            });
+
+            // Resend Verification form
+            document.getElementById('resendVerificationForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    email: formData.get('email')
+                };
+
+                const response = await makeApiCall('/auth/resend-verification', 'POST', data);
+                formatResponse(response, 'resendVerificationResponse');
+            });
+
+            // Change Password form
+            document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const token = document.getElementById('changePasswordToken').value;
+                const formData = new FormData(e.target);
+                const data = {
+                    old_password: formData.get('old_password'),
+                    new_password: formData.get('new_password')
+                };
+                
+                if (!token) {
+                    alert('Please provide an access token');
+                    return;
+                }
+
+                const response = await makeApiCall('/auth/change-password', 'POST', data, token);
+                formatResponse(response, 'changePasswordResponse');
+            });
+
+            // Get Me form
+            document.getElementById('getMeForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const token = document.getElementById('getMeToken').value;
+                
+                if (!token) {
+                    alert('Please provide an access token');
+                    return;
+                }
+
+                const response = await makeApiCall('/auth/me', 'GET', null, token);
+                formatResponse(response, 'getMeResponse');
+            });
+        });
+    </script>
+</body>
+</html>

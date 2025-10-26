@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from datetime import datetime
 import pyotp
@@ -9,7 +10,7 @@ from common.db.mysql import Base, engine, get_session
 from common.security.jwt import create_access_token, decode_token, TokenError
 from common.i18n import get_locale, t
 
-from .schemas import (
+from services.auth.schemas import (
     RegisterRequest,
     LoginRequest,
     TokenResponse,
@@ -23,7 +24,7 @@ from .schemas import (
     MfaVerifyRequest,
     MfaSetupResponse,
 )
-from .repository import (
+from services.auth.repository import (
     get_user_by_email,
     get_user_by_id,
     create_user,
@@ -39,6 +40,16 @@ from .repository import (
 )
 
 app = FastAPI(title="SalahkaarPro Auth Service")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify exact origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 router = APIRouter(prefix="/api/v1")
 
 # Create tables on startup
@@ -185,7 +196,7 @@ def mfa_setup(current_user: UserResponse = Depends(get_current_user), db: Sessio
     # Save secret; do not enable until verified
     user = db.get(type("UserProxy", (), {})(), current_user.id)  # placeholder not used
     # direct fetch real user
-    from .models import User
+    from services.auth.models import User
     user = db.get(User, current_user.id)
     user.mfa_secret = secret
     db.commit()
@@ -196,7 +207,7 @@ def mfa_setup(current_user: UserResponse = Depends(get_current_user), db: Sessio
 
 @router.post("/auth/mfa/verify")
 def mfa_verify(payload: MfaVerifyRequest, current_user: UserResponse = Depends(get_current_user), db: Session = Depends(get_session)):
-    from .models import User
+    from services.auth.models import User
     user = db.get(User, current_user.id)
     if not user.mfa_secret:
         raise HTTPException(status_code=400, detail="MFA not setup")
@@ -210,7 +221,7 @@ def mfa_verify(payload: MfaVerifyRequest, current_user: UserResponse = Depends(g
 @router.post("/auth/mfa/disable")
 def mfa_disable(payload: MfaVerifyRequest, current_user: UserResponse = Depends(get_current_user), db: Session = Depends(get_session)):
     require_admin(current_user)
-    from .models import User
+    from services.auth.models import User
     user = db.get(User, current_user.id)
     user.mfa_enabled = False
     user.mfa_secret = None
