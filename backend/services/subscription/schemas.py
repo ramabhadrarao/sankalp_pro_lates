@@ -30,3 +30,38 @@ class ReportLimitsResponse(BaseModel):
 class AdminTierUpdateRequest(BaseModel):
     tier: str
     renewal_enabled: Optional[bool] = None
+
+class TierItem(BaseModel):
+    tier_name: str
+    price: int
+    features: list[str]
+
+class TierDetailResponse(BaseModel):
+    tier_name: str
+    price: int
+    features: list[str]
+
+class SubscribeResponse(BaseModel):
+    subscription_id: int
+    payment_url: str
+
+class TrialStatusResponse(BaseModel):
+    status: bool
+    reports_used: int
+    expires_at: Optional[datetime]
+
+class CheckLimitResponse(BaseModel):
+    can_generate: bool
+    remaining: int
+
+class DeductResponse(BaseModel):
+    remaining_reports: int
+
+class FormsSelectionResponse(BaseModel):
+    selected_forms: list[int]
+
+class AvailableFormsResponse(BaseModel):
+    available_forms: list[int]
+
+class AnalyticsAdminResponse(BaseModel):
+    stats: dict

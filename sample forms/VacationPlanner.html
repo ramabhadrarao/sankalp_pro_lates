@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vacation / World Tour Planner — Sequential Accumulation</title>
+  <style>
+    /* Reused UI (same visual parity as your other forms) */
+    body{font-family:Arial,Helvetica,sans-serif;background:#f3f6fb;padding:28px;margin:0}
+    .form-wrap{max-width:1100px;margin:0 auto;background:#fff;padding:22px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+    h1{color:#0b4da0;margin:0 0 8px;text-align:center}
+    h2{color:#d41031;margin:0 0 4px;text-align:center}
+    p.lead{color:#374151;margin:10px 0 16px;text-align:center}
+    label{display:block;margin:8px 0 6px;font-weight:700;color:#111}
+    label .req{color:#c00;margin-left:6px}
+    input[type="text"], input[type="number"], input[type="date"], input[type="month"], select, textarea{width:100%;padding:10px;border-radius:6px;border:1px solid #d1d5db;box-sizing:border-box;font-size:14px}
+    input[readonly]{background:#f3f4f6}
+    .two-col{display:flex;gap:12px}
+    .two-col > div{flex:1}
+    .btn{background:#0b5fff;color:#fff;padding:10px 14px;border-radius:6px;border:none;cursor:pointer}
+    .btn[disabled]{opacity:.7;cursor:default}
+    .small{font-size:13px;color:#374151}
+    .hidden{display:none}
+    .disabled{background:#f3f4f6;color:#6b7280}
+    @media (max-width:720px){ .two-col{flex-direction:column} }
+    .why-matters { font-weight: bold; color: #057722; font-size: .8em; margin-top: 4px; }
+    .note-block{font-size:13px;color:#111;margin-top:10px;padding:10px;border-radius:8px;background:#f8fafc;border:1px solid #e6eef9}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #e6eef9;padding:8px;text-align:left;font-size:14px}
+    .comparison-table th,.comparison-table td{border:1px solid #e6eef9;padding:10px;text-align:center}
+    .caption-small{font-size:12px;color:#6b7280;margin-top:6px}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center}
+    .modal{background:#fff;padding:22px;border-radius:10px;max-width:980px;width:96%;box-shadow:0 8px 30px rgba(0,0,0,0.15)}
+    .cta-row{display:flex;gap:12px;margin-top:18px;justify-content:flex-end}
+    .primary-cta{background:#007bff;color:#fff;padding:12px 14px;border-radius:8px;text-decoration:none}
+    .secondary-cta{background:#0b5fff;color:#fff;padding:12px 14px;border-radius:8px;text-decoration:none;opacity:.95}
+    .bold-cta{font-weight:900;font-size:1.12rem;color:#0b5fff;text-align:center;margin-top:12px;margin-bottom:8px}
+    .disclaimer{font-size:12px;color:#6b7280;margin-top:8px;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="form-wrap" role="main" aria-labelledby="title">
+    <h1 id="title">Vacation / World Tour Planner</h1>
+    <h2>Date-based accumulation — sequential saving windows</h2>
+    <p class="lead">Enter client details and define each vacation with its desired month/year. Saving window for each trip is calculated sequentially — i.e., from the previous trip's start.</p>
+
+    <form id="vacForm" novalidate>
+      <input type="hidden" id="timestamp" name="timestamp" value="">
+
+      <!-- Basic info (expanded) -->
+      <label for="fullName">Full Name <span class="req">*</span></label>
+      <input id="fullName" name="fullName" type="text" placeholder="e.g., Kapil Sharma" required>
+
+      <div class="two-col">
+        <div>
+          <label for="email">Email <span class="req">*</span></label>
+          <input id="email" name="email" type="text" placeholder="you@example.com" required>
+        </div>
+        <div>
+          <label for="mobile">Mobile Number <span class="req">*</span></label>
+          <input id="mobile" name="mobile" type="text" placeholder="10-digit mobile (6-9 start)" required>
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-top:8px">
+        <div>
+          <label for="gender">Gender</label>
+          <select id="gender" name="gender">
+            <option value="">Select</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="dob">Date of Birth</label>
+          <input id="dob" name="dob" type="date">
+          <div class="caption-small">Minimum age allowed is 23 years (DOB validated).</div>
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-top:8px">
+        <div>
+          <label for="age">Age (calculated)</label>
+          <input id="age" name="age" type="text" readonly placeholder="Calculated from DOB">
+        </div>
+        <div>
+          <label for="city">City of Residence</label>
+          <select id="city" name="city">
+            <option value="">Select City</option>
+          </select>
+        </div>
+      </div>
+
+      <hr style="margin:18px 0">
+
+      <!-- Planner controls -->
+      <div style="margin-top:8px">
+        <h3>Planner Configuration</h3>
+        <div class="two-col">
+          <div>
+            <label for="noVacations">No. of Vacations to plan <span class="req">*</span></label>
+            <input id="noVacations" name="noVacations" type="number" min="1" max="50" value="3" required>
+            <div class="caption-small">Changing this value will auto-create that many rows below.</div>
+          </div>
+          <div>
+            <label for="baseYear">Base Year</label>
+            <input id="baseYear" name="baseYear" type="text" readonly>
+          </div>
+        </div>
+
+        <div class="two-col" style="margin-top:8px">
+          <div>
+            <label for="inflation">Expected Annual Inflation Rate (%)</label>
+            <input id="inflation" name="inflation" type="number" min="0" max="25" step="0.1" value="6">
+            <div class="caption-small">Default 6% p.a.</div>
+          </div>
+          <div>
+            <label for="expReturn">Expected Annual Rate of Return (%)</label>
+            <input id="expReturn" name="expReturn" type="number" min="0" max="25" step="0.1" value="9">
+            <div class="caption-small">Default 9% p.a.</div>
+          </div>
+        </div>
+      </div>
+
+      <hr style="margin:18px 0">
+
+      <!-- Dynamic vacation rows table (auto-managed) -->
+      <div style="margin-top:12px">
+        <h3>Vacation Details (one row per vacation)</h3>
+        <div class="note-block small-muted">Rows are created automatically to match the 'No. of Vacations' value. Each row's saving window = months between previous trip's start and that trip's chosen month/year. Trip Start cannot be a past month.</div>
+
+        <div style="margin-top:10px;overflow:auto">
+          <table id="vacationsTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Destination</th>
+                <th>No. of Travelers</th>
+                <th>Trip Start (month & year)</th>
+                <th>Cost per person (today)</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="vacRows"></tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button type="button" id="resetRows" class="btn" style="background:#6b7280">Reset</button>
+        </div>
+      </div>
+
+      <!-- Consent -->
+      <div style="margin-top:12px">
+        <input id="consent" name="consent" type="checkbox" required>
+        <label for="consent">I consent to my information being used to generate a personalised vacation plan and to be contacted by the advisor. <span style="color:#c00">*</span></label>
+      </div>
+
+      <!-- Buttons -->
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+        <button class="btn" id="computeBtn" type="button">Compute Vacation Plan</button>
+        <span id="statusMsg" class="small" aria-live="polite"></span>
+      </div>
+
+      <textarea id="detailedData" style="display:none" aria-hidden="true"></textarea>
+    </form>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="vacModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document" aria-labelledby="modalTitle">
+      <h2 id="modalTitle">Vacation Plan — Projection</h2>
+
+      <div id="modalSummary" class="note-block">
+        <div id="modalHeadline">—</div>
+        <div class="bold-cta">Contact an advisor now — plan your dream vacation worry-free and beautifully executed.</div>
+      </div>
+
+      <h3 style="margin-top:12px;text-align:center">Projected Vacations</h3>
+      <table class="comparison-table" id="vacTable">
+        <thead>
+          <tr>
+            <th>Year of vacation</th>
+            <th>No. of Travelers</th>
+            <th>Cost per person</th>
+            <th>Total Amount</th>
+            <th>Time for Accumulating funds</th>
+            <th>Monthly Investment required</th>
+          </tr>
+        </thead>
+        <tbody id="vacTableBody"></tbody>
+      </table>
+
+      <div style="margin-top:10px">
+        <h4>Notes & Assumptions</h4>
+        <div id="assumptions" class="caption-small note-block"></div>
+        <div class="disclaimer"><strong>Disclaimer:</strong> LTCG & STCG implications for investment returns and withdrawals will be explained in the detailed report.</div>
+      </div>
+
+      <div class="cta-row">
+        <a id="bookCall" class="primary-cta" href="#" target="_blank">Request a Call</a>
+        <a id="requestReport" class="secondary-cta" href="/request-report" target="_blank">Request Detailed Report</a>
+      </div>
+
+      <div id="modalStatus" class="status-msg" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+<script>
+/* ---------- Utilities ---------- */
+function parseNum(v){
+  if (v === undefined || v === null) return 0;
+  const s = (''+v).replace(/,/g,'').replace(/₹/g,'').trim();
+  if (s === '') return 0;
+  const n = Number(s);
+  return isNaN(n) ? 0 : n;
+}
+function fmtINR(n){
+  if (n === null || n === undefined) return '—';
+  if (!isFinite(n)) return '—';
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+function attachCurrencyMask(el){
+  if (!el) return;
+  el.addEventListener('input', function () {
+    if (el.disabled) return;
+    const raw = el.value || '';
+    const digits = raw.replace(/\D/g, '');
+    if (digits === '') { el.value = ''; return; }
+    const limited = digits.slice(0, 14);
+    const formatted = new Intl.NumberFormat('en-IN').format(Number(limited));
+    el.value = '₹' + formatted;
+  });
+  el.addEventListener('blur', function () {
+    if (el.disabled) return;
+    const digits = (el.value || '').replace(/\D/g, '');
+    el.value = digits === '' ? '' : '₹' + new Intl.NumberFormat('en-IN').format(Number(digits));
+  });
+  el.addEventListener('focus', function () {
+    if (el.disabled) return;
+    const digits = (el.value || '').replace(/\D/g, '');
+    el.value = digits ? digits : '';
+  });
+}
+
+/* SIP math */
+function monthlyInvestmentForFV(fv, annualReturnPct, years){
+  const n = Math.max(1, Math.round(years*12));
+  const r = (annualReturnPct/12)/100;
+  if (fv <= 0) return 0;
+  if (r <= 0) return fv / n;
+  const pow = Math.pow(1+r, n);
+  return fv * r / (pow - 1);
+}
+
+/* date helpers */
+function parseMonthInput(monthStr){
+  if (!monthStr) return null;
+  const parts = monthStr.split('-');
+  if (parts.length !== 2) return null;
+  return new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+}
+function monthsBetween(fromDate, toDate){
+  if (!fromDate || !toDate) return 0;
+  const years = toDate.getFullYear() - fromDate.getFullYear();
+  const months = toDate.getMonth() - fromDate.getMonth();
+  return years*12 + months;
+}
+
+/* ---------- Init ---------- */
+document.addEventListener('DOMContentLoaded', function(){
+  try {
+    document.getElementById('timestamp').value = new Date().toLocaleString();
+
+    // base year
+    document.getElementById('baseYear').value = new Date().getFullYear();
+
+    // populate cities (same list as earlier)
+    const cities = ["Mumbai","Delhi","Bengaluru","Chennai","Kolkata","Hyderabad","Pune","Ahmedabad","Surat","Jaipur","Lucknow","Bhopal","Visakhapatnam","Coimbatore","Nagpur","Indore","Vadodara","Others"];
+    const citySelect = document.getElementById('city');
+    cities.forEach(c => { const o=document.createElement('option'); o.value=c; o.text=c; citySelect.appendChild(o); });
+
+    // DOB -> age calculation + validation (min age 23)
+    const dobEl = document.getElementById('dob');
+    const ageField = document.getElementById('age');
+    if (dobEl){
+      // set max DOB so that age >= 23
+      (function setDobMax(){
+        const now = new Date();
+        const y = now.getFullYear() - 23;
+        const m = String(now.getMonth() + 1).padStart(2,'0');
+        const d = String(now.getDate()).padStart(2,'0');
+        dobEl.max = `${y}-${m}-${d}`;
+      })();
+
+      dobEl.addEventListener('change', function(){
+        const v = this.value;
+        if (!v){ ageField.value = ''; return; }
+        const d = new Date(v + 'T00:00:00');
+        if (isNaN(d)){ ageField.value=''; return; }
+        const now = new Date();
+        let age = now.getFullYear() - d.getFullYear();
+        const m = now.getMonth() - d.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+        age = Math.max(0, age);
+        if (age < 23){
+          alert('Minimum age must be 23 years.');
+          this.value = '';
+          ageField.value = '';
+          return;
+        }
+        ageField.value = age;
+      });
+    }
+
+    // initial rows build & attach handler for auto-updating when noVacations changes
+    buildRowsFromCount();
+
+    document.getElementById('noVacations').addEventListener('change', function(){
+      const v = parseInt(this.value || '0', 10);
+      if (!isFinite(v) || v < 1) { this.value = 1; }
+      buildRowsFromCount();
+    });
+
+    // Reset button: reset to default 3 rows and clear inputs
+    document.getElementById('resetRows').addEventListener('click', function(){
+      document.getElementById('noVacations').value = 3;
+      buildRowsFromCount();
+    });
+
+  } catch (e){
+    console.warn('Init error', e);
+  }
+});
+
+/* ---------- Dynamic rows (auto-managed) ---------- */
+function buildRowsFromCount(){
+  const count = Math.max(1, Math.min(50, parseInt(document.getElementById('noVacations').value || '1',10)));
+  const tbody = document.getElementById('vacRows');
+  tbody.innerHTML = '';
+  const minMonth = (() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth()+1).padStart(2,'0');
+    return `${y}-${m}`;
+  })();
+  for (let i=0;i<count;i++){
+    const tr = document.createElement('tr');
+
+    const idxTd = document.createElement('td');
+    idxTd.textContent = i+1;
+
+    const destTd = document.createElement('td');
+    const destSel = document.createElement('select');
+    destSel.name = 'destination';
+    ['', 'Domestic', 'International'].forEach(opt => { const o=document.createElement('option'); o.value = opt ? opt.toLowerCase() : ''; o.text = opt || 'Select'; destSel.appendChild(o); });
+    destTd.appendChild(destSel);
+
+    const travTd = document.createElement('td');
+    const travInp = document.createElement('input');
+    travInp.type = 'number'; travInp.min = '1'; travInp.step='1'; travInp.value = 2;
+    travTd.appendChild(travInp);
+
+    const monthTd = document.createElement('td');
+    const monthInp = document.createElement('input'); monthInp.type='month'; monthInp.name='tripStart';
+    monthInp.min = minMonth; // prevent past month selection
+    monthTd.appendChild(monthInp);
+
+    const costTd = document.createElement('td');
+    const costInp = document.createElement('input'); costInp.type='text'; costInp.name='costPerPerson'; costInp.placeholder='₹ e.g., 150000';
+    attachCurrencyMask(costInp);
+    costTd.appendChild(costInp);
+
+    const notesTd = document.createElement('td');
+    const notesInp = document.createElement('input'); notesInp.type='text'; notesInp.placeholder='optional notes';
+    notesTd.appendChild(notesInp);
+
+    tr.appendChild(idxTd);
+    tr.appendChild(destTd);
+    tr.appendChild(travTd);
+    tr.appendChild(monthTd);
+    tr.appendChild(costTd);
+    tr.appendChild(notesTd);
+
+    tbody.appendChild(tr);
+  }
+}
+
+/* ---------- Compute logic (sequential accumulation windows; inflation from current month) ---------- */
+document.getElementById('computeBtn').addEventListener('click', async function(){
+  try {
+    // basic validations
+    const consent = document.getElementById('consent');
+    if (!consent || !consent.checked){ alert('Please provide consent to proceed.'); consent && consent.focus(); return; }
+
+    const fullName = (document.getElementById('fullName').value || '').trim();
+    if (!fullName){ alert('Enter Full Name'); return; }
+
+    const email = (document.getElementById('email').value || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ alert('Enter a valid email'); return; }
+
+    const mobile = (document.getElementById('mobile').value || '').trim();
+    if (!/^[6-9]\d{9}$/.test(mobile)){ alert('Enter valid 10-digit mobile starting with 6-9'); return; }
+
+    const inflationPct = parseFloat(document.getElementById('inflation').value || '0');
+    const expReturnPct = parseFloat(document.getElementById('expReturn').value || '0');
+    if (!isFinite(inflationPct) || inflationPct < 0 || inflationPct > 25){ alert('Enter valid inflation rate (0-25%)'); return; }
+    if (!isFinite(expReturnPct) || expReturnPct < 0 || expReturnPct > 25){ alert('Enter valid expected return (0-25%)'); return; }
+
+    // gather rows
+    const tbody = document.getElementById('vacRows');
+    const rows = Array.from(tbody.children);
+    if (rows.length === 0){ alert('Add at least one vacation row.'); return; }
+
+    const now = new Date();
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Build vacations array and validate each row
+    const vacations = [];
+    for (let i=0;i<rows.length;i++){
+      const r = rows[i];
+      const dest = (r.querySelector('select[name="destination"]') || {}).value || '';
+      const travelers = parseInt((r.querySelector('input[type="number"]') || {}).value || '0',10);
+      const tripStartStr = (r.querySelector('input[type="month"]') || {}).value || '';
+      const costPerPerson = parseNum((r.querySelector('input[name="costPerPerson"]') || {}).value);
+      const notes = (r.querySelector('input[type="text"]') || {}).value || '';
+
+      if (!dest){ alert(`Row ${i+1}: select Destination (Domestic/International)`); return; }
+      if (!travelers || travelers < 1){ alert(`Row ${i+1}: enter valid number of travelers`); return; }
+      if (!tripStartStr){ alert(`Row ${i+1}: select Trip Start month & year`); return; }
+      if (!costPerPerson || costPerPerson <= 0){ alert(`Row ${i+1}: enter valid Cost per person (today)`); return; }
+
+      const tripDate = parseMonthInput(tripStartStr);
+      if (!tripDate){ alert(`Row ${i+1}: invalid trip month`); return; }
+
+      // ensure tripDate is not in past (compared to current month)
+      const monthsUntilFromNow = monthsBetween(currentMonthStart, tripDate);
+      if (monthsUntilFromNow < 0){ alert(`Row ${i+1}: Trip start cannot be in the past.`); return; }
+
+      vacations.push({
+        idx: i+1,
+        destination: dest,
+        travelers,
+        tripStartStr,
+        tripDate,
+        costPerPersonToday: costPerPerson,
+        notes
+      });
+    }
+
+    // Sequential accumulation: saving window for first = monthsBetween(currentMonthStart, trip1)
+    // subsequent = monthsBetween(prevTripStart, thisTripStart)
+    const projections = [];
+    let prevStart = currentMonthStart;
+
+    for (let i=0;i<vacations.length;i++){
+      const v = vacations[i];
+
+      // months to accumulate for this trip = months between prevStart and this trip's start
+      let monthsToAccumulate = Math.max(0, monthsBetween(prevStart, v.tripDate));
+
+      // inflation factor ALWAYS from current month to the trip date (as requested)
+      const monthsUntilFromNow = Math.max(0, monthsBetween(currentMonthStart, v.tripDate));
+      const yearsUntilFromNow = monthsUntilFromNow / 12;
+      const inflationFactor = Math.pow(1 + inflationPct/100, yearsUntilFromNow);
+
+      const projectedCostPerPerson = v.costPerPersonToday * inflationFactor;
+      const totalAmount = projectedCostPerPerson * v.travelers;
+
+      // monthly SIP calculation uses the monthsToAccumulate (sequential window)
+      let monthlyInvestment;
+      if (monthsToAccumulate <= 0) {
+        monthlyInvestment = totalAmount; // lump-sum
+      } else {
+        monthlyInvestment = monthlyInvestmentForFV(totalAmount, expReturnPct, monthsToAccumulate/12);
+      }
+
+      projections.push({
+        idx: v.idx,
+        year: v.tripDate.getFullYear(),
+        month: (v.tripDate.getMonth()+1).toString().padStart(2,'0'),
+        travelers: v.travelers,
+        costPerPersonProjected: Math.round(projectedCostPerPerson),
+        totalAmount: Math.round(totalAmount),
+        monthsToAccumulate: Math.round(monthsToAccumulate),
+        monthlyInvestment: Math.round(monthlyInvestment),
+        destination: v.destination,
+        notes: v.notes
+      });
+
+      // update prevStart to this trip's start for the next iteration
+      prevStart = v.tripDate;
+    }
+
+    // Save detailed JSON
+    const detailed = {
+      timestamp: document.getElementById('timestamp').value,
+      identity: {
+        fullName: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        mobile: document.getElementById('mobile').value,
+        gender: document.getElementById('gender').value,
+        dob: document.getElementById('dob').value,
+        age: document.getElementById('age').value,
+        city: document.getElementById('city').value
+      },
+      plannerConfig: {
+        noVacations: vacations.length,
+        inflationPct,
+        expReturnPct,
+        mode: 'sequential (accumulation from previous trip start)'
+      },
+      vacations,
+      projections
+    };
+
+    document.getElementById('detailedData').value = JSON.stringify(detailed);
+
+    // Modal population
+    const modal = document.getElementById('vacModal');
+    const modalHeadline = document.getElementById('modalHeadline');
+    modalHeadline.textContent = `Showing ${projections.length} vacation projection(s). Savings window for each is sequential (previous trip start → this trip start).`;
+
+    const tbodyOut = document.getElementById('vacTableBody');
+    tbodyOut.innerHTML = '';
+    projections.forEach(p => {
+      const tr = document.createElement('tr');
+
+      const colYear = document.createElement('td'); colYear.textContent = p.year;
+      const colTrav = document.createElement('td'); colTrav.textContent = p.travelers;
+      const colCostPerson = document.createElement('td'); colCostPerson.textContent = fmtINR(p.costPerPersonProjected);
+      const colTotal = document.createElement('td'); colTotal.textContent = fmtINR(p.totalAmount);
+      const colTime = document.createElement('td'); colTime.textContent = (p.monthsToAccumulate<=0 ? 'Immediate / lump-sum' : `${p.monthsToAccumulate} month(s) (~${(p.monthsToAccumulate/12).toFixed(1)} yr)` );
+      const colSIP = document.createElement('td'); colSIP.textContent = (p.monthsToAccumulate<=0 ? fmtINR(p.totalAmount) + ' (lump-sum)' : fmtINR(p.monthlyInvestment));
+
+      tr.appendChild(colYear);
+      tr.appendChild(colTrav);
+      tr.appendChild(colCostPerson);
+      tr.appendChild(colTotal);
+      tr.appendChild(colTime);
+      tr.appendChild(colSIP);
+
+      tbodyOut.appendChild(tr);
+    });
+
+    // Assumptions
+    const assumptionsEl = document.getElementById('assumptions');
+    assumptionsEl.innerHTML = `<strong>Assumptions</strong>
+      <ul style="margin:6px 0 0 18px;text-align:left;">
+        <li>Inflation applied from current month to each trip's month/year: ${inflationPct}% p.a.</li>
+        <li>Rate of return used for SIP calculations: ${expReturnPct}% p.a.</li>
+        <li>Saving window (months to accumulate) is sequential: first = current → trip1; next = trip1 → trip2; and so on.</li>
+        <li>Trips with zero months to accumulate are treated as immediate / lump-sum requirements.</li>
+      </ul>`;
+
+    document.getElementById('bookCall').href = `/book-call?name=${encodeURIComponent(fullName)}`;
+    document.getElementById('requestReport').href = `/request-report?name=${encodeURIComponent(fullName)}`;
+
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('modalStatus').textContent = 'Saving your projection...';
+
+    // Best-effort server save
+    try {
+      const resp = await fetch('/api/saveVacationPlan', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(detailed)
+      });
+      if (resp.ok) document.getElementById('modalStatus').textContent = 'Saved — advisor will follow up.';
+      else document.getElementById('modalStatus').textContent = 'Saved locally but server save failed.';
+    } catch (err){
+      console.warn('Save failed', err);
+      document.getElementById('modalStatus').textContent = 'Could not save to server — try Request Detailed Report.';
+    }
+
+  } catch (err){
+    console.error('Compute failed', err);
+    alert('Computation error — check console for details.');
+  }
+});
+
+/* Modal close handlers */
+document.getElementById('vacModal').addEventListener('click', function(e){
+  if (e.target === this){
+    this.style.display = 'none';
+    this.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){
+    const modal = document.getElementById('vacModal');
+    if (modal.style.display === 'flex'){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+  }
+});
+</script>
+</body>
+</html>

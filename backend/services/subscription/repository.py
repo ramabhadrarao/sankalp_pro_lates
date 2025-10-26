@@ -91,3 +91,18 @@ def admin_update_subscription(db: Session, user_id: int, tier: str | None, renew
     db.commit()
     db.refresh(sub)
     return sub
+
+
+def consume_report_count(db: Session, user_id: int) -> int:
+    """Deduct one report from user's monthly allowance if available.
+    Returns remaining reports after deduction.
+    """
+    sub = get_or_create_subscription(db, user_id)
+    limit, used, remaining = get_limits(db, user_id)
+    if remaining <= 0:
+        return 0
+    sub.reports_used = (sub.reports_used or 0) + 1
+    db.commit()
+    # recompute remaining
+    _, used2, remaining2 = get_limits(db, user_id)
+    return remaining2

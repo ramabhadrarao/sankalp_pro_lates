@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Smart Income Tax Planning — Fixed handlers</title>
+<style>
+:root{--accent:#0b5fff;--danger:#c53030;--muted:#6b7280}
+body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;color:#0b2545;background:#f4f7fb;padding:20px;margin:0}
+.container{max-width:1150px;margin:0 auto;background:#fff;padding:22px;border-radius:8px;box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+h1{color:#07316a;margin:0 0 6px;text-align:center}
+.slogan{font-weight:800;color:#c53030;text-transform:uppercase;text-align:center;margin:6px 0 8px}
+.lead{color:var(--muted);text-align:center;margin:6px 0 14px}
+label{display:block;margin:6px 0 6px;font-weight:700;color:#0b2545}
+.required{color:var(--danger);margin-left:6px;font-weight:700}
+input[type="text"], input[type="date"], select, textarea{width:100%;padding:9px;border-radius:6px;border:1px solid #d1d5db;box-sizing:border-box;font-size:14px}
+input.invalid, select.invalid, textarea.invalid{border-color:var(--danger);box-shadow:0 0 0 3px rgba(197,48,48,0.06)}
+.inline-error{color:var(--danger);font-size:12px;margin-top:6px;display:none}
+.inline-error.visible{display:block}
+textarea{min-height:80px}
+.two-col{display:flex;gap:12px}
+.two-col>div{flex:1}
+.inline-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:760px){.two-col,.inline-grid{display:block}}
+.btn{background:var(--accent);color:#fff;padding:10px 14px;border-radius:6px;border:none;cursor:pointer}
+.muted{color:var(--muted);font-size:13px}
+.hidden{display:none}
+.section{margin-top:14px;padding:12px;border-radius:8px;border:1px solid #e6eef9;background:#fff}
+.table{width:100%;border-collapse:collapse;margin-top:8px}
+.table th,.table td{padding:8px;border:1px solid #edf2f9;text-align:left;font-size:14px}
+.annexure{border:1px solid #e6eef9;padding:12px;border-radius:8px;background:#fff}
+.result-table{width:100%;border-collapse:collapse;margin-top:10px}
+.result-table th,.result-table td{border:1px solid #e2e8f0;padding:8px;text-align:left;vertical-align:top}
+.result-table th{background:#f1f5f9;font-weight:700}
+.amount{font-weight:800;color:#0b3b82;text-align:right}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px}
+.modal{background:#fff;width:100%;max-width:980px;border-radius:8px;padding:18px;max-height:90vh;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
+.month-table{width:100%;border-collapse:collapse;margin-top:8px}
+.month-table th,.month-table td{padding:6px;border:1px solid #e5edf6;text-align:right;font-size:13px}
+.month-table th{background:#f8fafc;font-weight:700;text-align:center}
+.month-input{width:90px;padding:6px;border-radius:6px;border:1px solid #e2e8f0}
+@media print{.close-x,#downloadPdfBtn,.modal-overlay{display:none!important}body{background:#fff}}
+.small-muted{font-size:12px;color:#475569;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="container" role="main">
+  <h1>Smart Income Tax Planning FY 2025-26</h1>
+  <div class="slogan">Taxes Simplified, Savings Amplified</div>
+  <p class="lead">Enter monthly salary components, incomes and deductions. Select monthly breakup to enter per-month salary for accuracy when salary changed during year (Apr → Mar).</p>
+
+  <form id="taxForm" novalidate>
+    <!-- Personal -->
+    <label>Full Name <span class="required">*</span></label>
+    <input id="fullName" type="text" placeholder="Enter full name" required>
+    <div class="inline-error" id="err_fullName">This field is required</div>
+
+    <div class="two-col" style="margin-top:8px">
+      <div>
+        <label>Email <span class="required">*</span></label>
+        <input id="email" type="text" placeholder="you@example.com" required>
+        <div class="inline-error" id="err_email">Enter a valid email</div>
+      </div>
+      <div>
+        <label>Mobile <span class="required">*</span></label>
+        <input id="mobile" type="text" placeholder="10-digit mobile" required>
+        <div class="inline-error" id="err_mobile">Enter a valid 10-digit mobile</div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top:8px">
+      <div>
+        <label>Date of Birth <span class="required">*</span></label>
+        <!-- inline handler ensures immediate age update even if other JS fails -->
+        <input id="dob" type="date" required
+          onchange="(function(){var v=this.value; var ageEl=document.getElementById('age'); if(!v){ageEl.value='';return;} var d=new Date(v); if(isNaN(d)){ageEl.value='';return;} var n=new Date(); var y=n.getFullYear()-d.getFullYear(); var m=n.getMonth()-d.getMonth(); if(m<0 || (m===0 && n.getDate()<d.getDate())) y--; ageEl.value = String(Math.max(0,y));})();"
+          oninput="(function(){var v=this.value; var ageEl=document.getElementById('age'); if(!v){ageEl.value='';return;} var d=new Date(v); if(isNaN(d)){ageEl.value='';return;} var n=new Date(); var y=n.getFullYear()-d.getFullYear(); var m=n.getMonth()-d.getMonth(); if(m<0 || (m===0 && n.getDate()<d.getDate())) y--; ageEl.value = String(Math.max(0,y));})();"
+        >
+        <div class="inline-error" id="err_dob">Enter date of birth</div>
+      </div>
+      <div>
+        <label>Age (auto)</label>
+        <input id="age" type="text" readonly placeholder="Auto-calculated">
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top:8px">
+      <div>
+        <label>Gender <span class="required">*</span></label>
+        <select id="gender" required><option value="">Select Gender</option><option>Male</option><option>Female</option></select>
+        <div class="inline-error" id="err_gender">Select gender</div>
+      </div>
+      <div>
+        <label>City of Residence <span class="required">*</span></label>
+        <input id="city" type="text" placeholder="Enter city" required>
+        <div class="inline-error" id="err_city">Enter city of residence</div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:12px">
+      <h3>Tax Regime</h3>
+      <label><input type="radio" name="taxRegime" value="old" checked> Old Regime</label>
+      <label><input type="radio" name="taxRegime" value="new"> New Regime</label>
+      <div class="small-muted">If New Regime is selected, most deductions are ignored in tax computation (inputs still captured).</div>
+    </div>
+
+    <hr style="margin:12px 0">
+
+    <div class="section">
+      <h3>Select Income Heads</h3>
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+        <!-- Inline onchange toggles the corresponding section display and calls helper toggleRequired via script fallback -->
+        <label><input id="chk_salary" type="checkbox" name="incomeSource" value="salary"
+          onchange="(function(el){var sec=document.getElementById('salarySection'); sec.style.display = el.checked ? 'block' : 'none'; toggleRequired('salarySection', el.checked); updateDeductionVisibility();})(this);"> Salary</label>
+
+        <label><input id="chk_business" type="checkbox" name="incomeSource" value="business"
+          onchange="(function(el){var sec=document.getElementById('businessSection'); sec.style.display = el.checked ? 'block' : 'none'; toggleRequired('businessSection', el.checked); updateDeductionVisibility();})(this);"> Business / Profession</label>
+
+        <label><input id="chk_house" type="checkbox" name="incomeSource" value="house"
+          onchange="(function(el){var sec=document.getElementById('houseSection'); sec.style.display = el.checked ? 'block' : 'none'; toggleRequired('houseSection', el.checked); updateDeductionVisibility();})(this);"> Income from House Property</label>
+
+        <label><input id="chk_capital" type="checkbox" name="incomeSource" value="capital"
+          onchange="(function(el){var sec=document.getElementById('capitalSection'); sec.style.display = el.checked ? 'block' : 'none'; toggleRequired('capitalSection', el.checked); updateDeductionVisibility();})(this);"> Capital Gains</label>
+
+        <label><input id="chk_other" type="checkbox" name="incomeSource" value="other"
+          onchange="(function(el){var sec=document.getElementById('otherSection'); sec.style.display = el.checked ? 'block' : 'none'; toggleRequired('otherSection', el.checked); updateDeductionVisibility();})(this);"> Other Sources</label>
+      </div>
+      <div class="small-muted" style="margin-top:8px">When you select a head, fields in that section become required — enter 0 if not applicable.</div>
+    </div>
+
+    <!-- SALARY SECTION -->
+    <div id="salarySection" class="section" style="display:none">
+      <h3>Salary — monthly inputs (Sl.2–8) or uniform monthly components</h3>
+
+      <div style="display:flex;gap:12px;align-items:center">
+        <label style="margin:0"><input id="salaryModeToggle" type="checkbox"> Provide monthly breakup (Apr → Mar)</label>
+        <div class="small-muted">Monthly breakup computes month-by-month HRA exemption (more accurate when salary changed).</div>
+      </div>
+
+      <div id="monthlyBreakSection" style="display:none;margin-top:10px">
+        <div class="small-muted">Enter per-month values Apr → Mar (enter 0 if not applicable).</div>
+        <table class="month-table" id="monthTable">
+          <thead>
+            <tr><th>Component</th><th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th><th>Jan</th><th>Feb</th><th>Mar</th><th>Total</th></tr>
+          </thead>
+          <tbody id="monthTableBody"></tbody>
+        </table>
+      </div>
+
+      <div id="uniformMonthlySection" style="margin-top:12px">
+        <div class="inline-grid">
+          <div>
+            <label>Basic + DA (monthly) <span class="required">*</span></label>
+            <input id="basic_monthly" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+            <div class="inline-error" id="err_basic_monthly">Required — enter 0 if not applicable</div>
+          </div>
+          <div>
+            <label>DA (monthly) — optional</label>
+            <input id="da_monthly" type="text" placeholder="Optional or 0">
+          </div>
+        </div>
+
+        <div class="inline-grid" style="margin-top:8px">
+          <div>
+            <label>HRA received (monthly) <span class="required">*</span></label>
+            <input id="hra_monthly" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+            <div class="inline-error" id="err_hra_monthly">Required — enter 0 if not applicable</div>
+          </div>
+          <div>
+            <label>Rent paid (monthly) <span class="required">*</span></label>
+            <input id="rent_monthly" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+            <div class="inline-error" id="err_rent_monthly">Required — enter 0 if not applicable</div>
+          </div>
+        </div>
+
+        <div class="inline-grid" style="margin-top:8px">
+          <div>
+            <label>Conveyance (monthly) <span class="required">*</span></label>
+            <input id="conveyance_monthly" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+            <div class="inline-error" id="err_conveyance_monthly">Required — enter 0 if not applicable</div>
+          </div>
+          <div>
+            <label>Special allowance (monthly) <span class="required">*</span></label>
+            <input id="special_allow_monthly" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+            <div class="inline-error" id="err_special_allow_monthly">Required — enter 0 if not applicable</div>
+          </div>
+        </div>
+
+        <div style="margin-top:8px">
+          <label>Other allowances (monthly) <span class="required">*</span></label>
+          <input id="other_allow_monthly" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+          <div class="inline-error" id="err_other_allow_monthly">Required — enter 0 if not applicable</div>
+        </div>
+
+        <div style="margin-top:8px">
+          <label>Perquisites (annual) <span class="required">*</span></label>
+          <input id="perquisites_annual" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+          <div class="inline-error" id="err_perquisites_annual">Required — enter 0 if not applicable</div>
+          <div class="small-muted">Perquisites are annual amounts (Form 16 gives these).</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="inline-grid">
+        <div>
+          <label>City type for HRA</label>
+          <select id="cityTypeSalary"><option value="nonmetro">Non-metro</option><option value="metro">Metro</option></select>
+        </div>
+        <div>
+          <label>Rent paid (monthly) (single input used for monthly mode too)</label>
+          <input id="rent_monthly_master" type="text" placeholder="Enter rent (monthly)">
+        </div>
+      </div>
+
+      <hr style="margin:12px 0">
+      <div style="font-weight:700">Computed (live)</div>
+      <div class="inline-grid" style="margin-top:8px">
+        <div><label>Gross Salary — A (annual)</label><input id="grossA" type="text" readonly></div>
+        <div><label>Total Exemptions — B (annual)</label><input id="totalExemptB" type="text" readonly></div>
+      </div>
+
+      <div class="inline-grid" style="margin-top:8px">
+        <div><label>Taxable Salary (A − B) (annual)</label><input id="taxableAminusB" type="text" readonly></div>
+        <div><label>Taxable after Std Deduction (annual)</label><input id="taxableAfterStd" type="text" readonly></div>
+      </div>
+
+      <div class="small-muted" style="margin-top:8px">If monthly breakup enabled, HRA is calculated per month and summed. Rent asked once for simplicity.</div>
+    </div>
+
+    <!-- BUSINESS -->
+    <div id="businessSection" class="section" style="display:none">
+      <h3>Business / Profession</h3>
+      <div class="inline-grid">
+        <div>
+          <label>Gross receipts / turnover (annual) <span class="required">*</span></label>
+          <input id="businessGross" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+          <div class="inline-error" id="err_businessGross">Required — enter 0 if not applicable</div>
+        </div>
+        <div>
+          <label>Business expenses (annual) <span class="required">*</span></label>
+          <input id="businessExpenses" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+          <div class="inline-error" id="err_businessExpenses">Required — enter 0 if not applicable</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOUSE -->
+    <div id="houseSection" class="section" style="display:none">
+      <h3>Income from House Property</h3>
+      <label>Property type</label>
+      <div style="display:flex;gap:12px;margin-top:6px">
+        <label><input type="radio" name="houseType" value="self" checked onclick="handleHouseTypeChange()"> Self-occupied</label>
+        <label><input type="radio" name="houseType" value="letout" onclick="handleHouseTypeChange()"> Let-out</label>
+      </div>
+
+      <div id="houseLetFields" style="display:none;margin-top:8px">
+        <div class="inline-grid">
+          <div>
+            <label>Gross annual rent received <span class="required">*</span></label>
+            <input id="rentReceived" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+            <div class="inline-error" id="err_rentReceived">Required — enter 0 if not applicable</div>
+          </div>
+          <div>
+            <label>Municipal taxes paid (annual) <span class="required">*</span></label>
+            <input id="municipalTaxes" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+            <div class="inline-error" id="err_municipalTaxes">Required — enter 0 if not applicable</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:8px">
+        <label>Interest on home loan (annual) <span class="required">*</span></label>
+        <input id="hpInterest" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+        <div class="inline-error" id="err_hpInterest">Required — enter 0 if not applicable</div>
+      </div>
+      <div class="small-muted" style="margin-top:8px">Principal repayment is captured under 80C.</div>
+    </div>
+
+    <!-- CAPITAL -->
+    <div id="capitalSection" class="section" style="display:none">
+      <h3>Capital Gains</h3>
+      <div class="inline-grid">
+        <div>
+          <label>STCG (short-term) <span class="required">*</span></label>
+          <input id="stcg" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+          <div class="inline-error" id="err_stcg">Required — enter 0 if not applicable</div>
+        </div>
+        <div>
+          <label>LTCG (long-term) <span class="required">*</span></label>
+          <input id="ltcg" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+          <div class="inline-error" id="err_ltcg">Required — enter 0 if not applicable</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTHER -->
+    <div id="otherSection" class="section" style="display:none">
+      <h3>Other Sources</h3>
+      <div class="inline-grid">
+        <div>
+          <label>Interest income (annual) <span class="required">*</span></label>
+          <input id="interestIncome" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+          <div class="inline-error" id="err_interestIncome">Required — enter 0 if not applicable</div>
+        </div>
+        <div>
+          <label>Dividend income (annual) <span class="required">*</span></label>
+          <input id="dividendIncome" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+          <div class="inline-error" id="err_dividendIncome">Required — enter 0 if not applicable</div>
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <label>Other taxable income (annual) <span class="required">*</span></label>
+        <input id="otherMisc" type="text" placeholder="Enter value (0 if not applicable)" data-required>
+        <div class="inline-error" id="err_otherMisc">Required — enter 0 if not applicable</div>
+      </div>
+    </div>
+
+    <!-- DEDUCTIONS (80C always visible) -->
+    <div id="deductionsSection" class="section" style="margin-top:14px">
+      <h3>Deductions</h3>
+      <div class="small-muted">80C cap ₹1,50,000. 80CCD(1B) additional ₹50,000.</div>
+
+      <div id="group80C" style="margin-top:8px">
+        <table class="table">
+          <thead><tr><th>80C & related</th><th>Amount (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>LIC</td><td><input id="c_lic" type="text" placeholder="0"></td></tr>
+            <tr><td>EPF/VPF</td><td><input id="c_epf" type="text" placeholder="0"></td></tr>
+            <tr><td>PPF</td><td><input id="c_ppf" type="text" placeholder="0"></td></tr>
+            <tr><td>NSC</td><td><input id="c_nsc" type="text" placeholder="0"></td></tr>
+            <tr><td>5-year FD (80C)</td><td><input id="c_fd" type="text" placeholder="0"></td></tr>
+            <tr><td>Sukanya Samriddhi</td><td><input id="c_sukanya" type="text" placeholder="0"></td></tr>
+            <tr><td>ELSS</td><td><input id="c_elss" type="text" placeholder="0"></td></tr>
+            <tr><td>ULIP</td><td><input id="c_ulip" type="text" placeholder="0"></td></tr>
+            <tr><td>Tuition fees (children)</td><td><input id="c_tuition" type="text" placeholder="0"></td></tr>
+            <tr><td>Principal repayment (home loan)</td><td><input id="c_principal" type="text" placeholder="0"></td></tr>
+            <tr><td>80CCC (pension)</td><td><input id="c_80ccc" type="text" placeholder="0"></td></tr>
+            <tr><td>Other 80C</td><td><input id="c_other80c" type="text" placeholder="0"></td></tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:12px" class="inline-grid">
+          <div><label>80CCD(1B) — NPS additional</label><input id="ccd1b" type="text" placeholder="0"></div>
+          <div><label>80E — Education loan interest</label><input id="ded80E" type="text" placeholder="0"></div>
+        </div>
+      </div>
+
+      <div id="group80D" style="margin-top:12px;display:none">
+        <h4>80D — Health insurance</h4>
+        <div class="inline-grid">
+          <div><label>Premium — self & family</label><input id="healthSelf" type="text" placeholder="0"></div>
+          <div><label>Premium — parents</label><input id="healthParents" type="text" placeholder="0"></div>
+        </div>
+        <div class="inline-grid" style="margin-top:8px">
+          <div>
+            <label>Parents status</label>
+            <select id="parentsSenior"><option value="">Select</option><option value="no">No</option><option value="yes">Yes</option><option value="na">Not applicable</option></select>
+          </div>
+          <div><label>Preventive health check-up (≤ ₹5,000)</label><input id="preventive" type="text" placeholder="0"></div>
+        </div>
+      </div>
+
+      <div id="group80TTA" style="margin-top:12px;display:none">
+        <div class="inline-grid">
+          <div><label>80TTA — Savings interest (cap ₹10,000)</label><input id="ded80TTA" type="text" placeholder="0"></div>
+          <div><label>80TTB — Interest (seniors) (cap ₹50,000)</label><input id="ded80TTB" type="text" placeholder="0"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="inline-grid">
+        <div><label>80G — Donations</label><input id="ded80G" type="text" placeholder="0"></div>
+        <div><label>80GGC — Political donations</label><input id="ded80GGC" type="text" placeholder="0"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:12px;align-items:center">
+      <button id="computeBtn" type="button" class="btn">Compute Tax (estimate)</button>
+      <div id="status" class="muted"></div>
+    </div>
+
+    <textarea id="advisorJSON" class="hidden" aria-hidden="true"></textarea>
+  </form>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="resultModal" role="dialog" aria-modal="true" style="display:none">
+  <div class="modal" id="modalContent">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2>Tax Estimate & Recommendations</h2>
+      <div style="display:flex;gap:8px">
+        <button id="downloadPdfBtn" class="btn">Download PDF</button>
+        <button id="closeModalBtn" class="close-x">Close</button>
+      </div>
+    </div>
+    <div id="modalSummary" class="section"></div>
+    <div id="modalCalculation" class="section"></div>
+    <div id="modalRecommendations" class="section"></div>
+    <div class="section" style="margin-top:10px">
+      <div class="small-muted"><strong>Disclaimer:</strong> This is an estimate. Reconcile with Form 16 and official ITR schedules before filing.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* --------------------
+  Robust helper JS (non-dependent on DOMContentLoaded).
+  Inline handlers guarantee DOB & checkbox toggles work;
+  script here is a fallback and implements full logic.
+-------------------- */
+
+(function(){
+
+/* small utilities */
+function parseNum(v){ if(v===undefined||v===null) return 0; var s=(''+v).replace(/,/g,'').replace(/₹/g,'').trim(); if(s==='') return 0; var n=Number(s); return isNaN(n)?0:n; }
+function fmtINR(n){ if(!isFinite(n)) return '—'; return '₹'+Math.round(n).toLocaleString('en-IN'); }
+
+/* safe element getters */
+function $id(id){ return document.getElementById(id); }
+
+/* toggleRequired used by inline onchange attributes */
+window.toggleRequired = function(sectionId, makeRequired){
+  var sec = $id(sectionId);
+  if(!sec) return;
+  var inputs = sec.querySelectorAll('input,select,textarea');
+  for(var i=0;i<inputs.length;i++){
+    var el = inputs[i];
+    if(el.readOnly) continue;
+    if(makeRequired){
+      el.setAttribute('data-required','true');
+      // add visual asterisk if label exists
+      var lab = el.previousElementSibling;
+      if(lab && lab.tagName==='LABEL' && !lab.querySelector('.required')) {
+        var sp=document.createElement('span'); sp.className='required'; sp.textContent='*'; lab.appendChild(sp);
+      }
+    } else {
+      el.removeAttribute('data-required');
+      var lab = el.previousElementSibling;
+      if(lab && lab.tagName==='LABEL'){ var s=lab.querySelector('.required'); if(s) s.remove(); }
+    }
+  }
+};
+
+/* HRA monthly table generation (Sl.2-8) */
+var MONTHS = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+var MONTH_ROWS = [
+  {id:'m_basic', label:'Basic (Sl.2)'},
+  {id:'m_hra', label:'HRA (Sl.3)'},
+  {id:'m_telephone', label:'Telephone Reimb. (Sl.4)'},
+  {id:'m_special', label:'Special Allow. (Sl.5)'},
+  {id:'m_joining', label:'Joining Bonus (Sl.6)'},
+  {id:'m_bonus', label:'Bonus (Sl.7)'},
+  {id:'m_mealcard', label:'Meal Card (Sl.8)'},
+  {id:'m_mealcard_exempt', label:'Meal Card Exempt (Sl.9)'}
+];
+
+function buildMonthlyTable(){
+  var tbody = $id('monthTableBody');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  MONTH_ROWS.forEach(function(row){
+    var tr = document.createElement('tr');
+    var tdLabel = document.createElement('td'); tdLabel.style.textAlign='left'; tdLabel.textContent = row.label; tr.appendChild(tdLabel);
+    MONTHS.forEach(function(m){
+      var td = document.createElement('td');
+      var inp = document.createElement('input');
+      inp.type='text'; inp.className='month-input'; inp.id = row.id + '_' + m;
+      inp.placeholder='0';
+      inp.addEventListener('input', function(){ this.value = (this.value||'').replace(/\D/g,''); computeMonthlyTotals(); });
+      td.appendChild(inp); tr.appendChild(td);
+    });
+    var tot = document.createElement('td'); tot.id = row.id + '_total'; tot.style.textAlign='right'; tot.textContent = '₹0';
+    tr.appendChild(tot);
+    tbody.appendChild(tr);
+  });
+}
+buildMonthlyTable();
+
+function computeMonthlyTotals(){
+  MONTH_ROWS.forEach(function(row){
+    var sum=0;
+    MONTHS.forEach(function(m){
+      var el = $id(row.id + '_' + m);
+      if(el) sum += parseNum(el.value || 0);
+    });
+    var totEl = $id(row.id + '_total');
+    if(totEl) totEl.textContent = fmtINR(sum);
+  });
+  computeSalaryLive();
+}
+
+/* attach masks to numeric fields (lightweight) */
+function attachMask(id){
+  var el = $id(id); if(!el) return;
+  el.addEventListener('input', function(){ var d=(this.value||'').replace(/\D/g,''); this.value = d? new Intl.NumberFormat('en-IN').format(Number(d)) : ''; });
+  el.addEventListener('blur', function(){ var d=(this.value||'').replace(/\D/g,''); this.value = d? new Intl.NumberFormat('en-IN').format(Number(d)) : ''; });
+  el.addEventListener('focus', function(){ this.value = (this.value||'').replace(/\D/g,''); });
+}
+[
+  'basic_monthly','da_monthly','hra_monthly','conveyance_monthly','special_allow_monthly','other_allow_monthly','perquisites_annual','rent_monthly_master','rent_monthly',
+  'businessGross','businessExpenses','rentReceived','municipalTaxes','hpInterest','stcg','ltcg','interestIncome','dividendIncome','otherMisc',
+  'c_lic','c_epf','c_ppf','c_nsc','c_fd','c_sukanya','c_elss','c_ulip','c_tuition','c_principal','c_80ccc','c_other80c','ccd1b','ded80E','healthSelf','healthParents','preventive','ded80TTA','ded80TTB','ded80G','ded80GGC'
+].forEach(attachMask);
+
+/* handle house type radio toggling (called inline too) */
+window.handleHouseTypeChange = function(){
+  var val = (document.querySelector('input[name="houseType"]:checked') || {}).value || 'self';
+  var letDiv = $id('houseLetFields');
+  if(!letDiv) return;
+  if(val === 'letout'){ letDiv.style.display = 'block'; } else { letDiv.style.display = 'none'; }
+};
+
+/* update deduction visibility - used by inline handlers too */
+window.updateDeductionVisibility = function(){
+  var salarySel = $id('chk_salary').checked;
+  var otherSel = $id('chk_other').checked;
+  var g80D = $id('group80D');
+  var g80TTA = $id('group80TTA');
+  if(g80D) g80D.style.display = salarySel ? 'block' : 'none';
+  if(g80TTA) g80TTA.style.display = otherSel ? 'block' : 'none';
+};
+
+/* compute salary live (supports monthly breakup) */
+function computeSalaryLive(){
+  var monthlyMode = $id('salaryModeToggle').checked;
+  var cityType = $id('cityTypeSalary').value;
+  var rentMonthlyMaster = parseNum($id('rent_monthly_master').value || 0);
+  var grossAnnual = 0, hraExemptTotal = 0;
+  var lta = parseNum($id('lta_exempt') ? $id('lta_exempt').value : 0);
+  var otherEx = parseNum($id('other_exempts') ? $id('other_exempts').value : 0);
+  var perqs = parseNum($id('perquisites_annual') ? $id('perquisites_annual').value : 0);
+
+  if(monthlyMode){
+    // sum monthly rows
+    var basicAnnual=0, convAnnual=0, specialAnnual=0, otherAnnual=0, hraAnnualInput=0;
+    MONTH_ROWS.forEach(function(row){
+      MONTHS.forEach(function(m){
+        var b = parseNum(($id(row.id + '_' + m) && $id(row.id + '_' + m).value) || 0);
+        // rough mapping (basic->basic, telephone->conv, special->special, joining+bonus+meal->other)
+        if(row.id === 'm_basic'){ basicAnnual += b; }
+        else if(row.id === 'm_telephone'){ convAnnual += b; }
+        else if(row.id === 'm_special'){ specialAnnual += b; }
+        else if(row.id === 'm_joining' || row.id === 'm_bonus' || row.id === 'm_mealcard'){ otherAnnual += b; }
+        else if(row.id === 'm_hra'){ hraAnnualInput += b; }
+      });
+    });
+    grossAnnual = basicAnnual + convAnnual + specialAnnual + otherAnnual + hraAnnualInput + perqs;
+
+    // HRA month by month
+    var hraSum = 0;
+    MONTHS.forEach(function(m){
+      var b = parseNum(($id('m_basic_' + m) && $id('m_basic_' + m).value) || 0);
+      var hra = parseNum(($id('m_hra_'+m) && $id('m_hra_'+m).value) || 0);
+      var rentForMonth = rentMonthlyMaster;
+      var A = Math.max(0, rentForMonth - 0.10 * b);
+      var B = (cityType === 'metro') ? 0.50 * b : 0.40 * b;
+      var C = hra;
+      var exemptThis = Math.max(0, Math.min(A,B,C));
+      hraSum += exemptThis;
+    });
+    hraExemptTotal = Math.round(hraSum);
+  } else {
+    var b = parseNum($id('basic_monthly') ? $id('basic_monthly').value : 0);
+    var da = parseNum($id('da_monthly') ? $id('da_monthly').value : 0);
+    var hra_m = parseNum($id('hra_monthly') ? $id('hra_monthly').value : 0);
+    var conv = parseNum($id('conveyance_monthly') ? $id('conveyance_monthly').value : 0);
+    var spec = parseNum($id('special_allow_monthly') ? $id('special_allow_monthly').value : 0);
+    var other = parseNum($id('other_allow_monthly') ? $id('other_allow_monthly').value : 0);
+    perqs = parseNum($id('perquisites_annual') ? $id('perquisites_annual').value : 0);
+    var rent_m = parseNum($id('rent_monthly') ? $id('rent_monthly').value : 0) || rentMonthlyMaster;
+    var basicAnnual = Math.round((b + da) * 12);
+    var conveyanceAnnual = Math.round(conv * 12);
+    var specialAnnual = Math.round(spec * 12);
+    var otherAllowAnnual = Math.round(other * 12);
+    var hraAnnualInput = Math.round(hra_m * 12);
+    grossAnnual = basicAnnual + conveyanceAnnual + specialAnnual + otherAllowAnnual + hraAnnualInput + perqs;
+    var basicUsed = Math.round((b + da) * 12);
+    var actualHRA = Math.round(hra_m * 12);
+    var rentAnnual = Math.round(rent_m * 12);
+    var rentMinus10 = Math.max(0, rentAnnual - 0.10 * basicUsed);
+    var percOfBasic = Math.round((cityType === 'metro' ? 0.50 : 0.40) * basicUsed);
+    hraExemptTotal = Math.max(0, Math.min(actualHRA, rentMinus10, percOfBasic));
+  }
+
+  var totalExempt = Math.round(hraExemptTotal + lta + otherEx);
+  var taxable = Math.max(0, grossAnnual - totalExempt);
+  var taxableAfterStd = Math.max(0, taxable - 50000);
+
+  if($id('grossA')) $id('grossA').value = fmtINR(grossAnnual);
+  if($id('totalExemptB')) $id('totalExemptB').value = fmtINR(totalExempt);
+  if($id('taxableAminusB')) $id('taxableAminusB').value = fmtINR(taxable);
+  if($id('taxableAfterStd')) $id('taxableAfterStd').value = fmtINR(taxableAfterStd);
+}
+
+/* basic utility for updating deduction visibility (called inline too) */
+window.updateDeductionVisibility = function(){
+  var salarySel = $id('chk_salary') && $id('chk_salary').checked;
+  var otherSel = $id('chk_other') && $id('chk_other').checked;
+  if($id('group80D')) $id('group80D').style.display = salarySel ? 'block' : 'none';
+  if($id('group80TTA')) $id('group80TTA').style.display = otherSel ? 'block' : 'none';
+};
+
+/* computeMonthlyTotals when monthly inputs change */
+window.computeMonthlyTotals = computeMonthlyTotals;
+
+/* download PDF and modal helpers */
+function openModal(){ if($id('resultModal')) $id('resultModal').style.display='flex'; }
+function closeModal(){ if($id('resultModal')) $id('resultModal').style.display='none'; }
+
+/* compute tax button (validation of visible required fields only) */
+$id('computeBtn').addEventListener('click', function(){
+  $id('status').textContent = '';
+  var ok = true;
+
+  // personal validation
+  var name = ($id('fullName').value||'').trim();
+  var email = ($id('email').value||'').trim();
+  var mobile = ($id('mobile').value||'').trim();
+  var dob = ($id('dob').value||'').trim();
+  var gender = ($id('gender').value||'').trim();
+  var city = ($id('city').value||'').trim();
+
+  if(!name){ $id('fullName').classList.add('invalid'); $id('err_fullName').classList.add('visible'); ok=false; } else { $id('fullName').classList.remove('invalid'); $id('err_fullName').classList.remove('visible'); }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ $id('email').classList.add('invalid'); $id('err_email').classList.add('visible'); ok=false; } else { $id('email').classList.remove('invalid'); $id('err_email').classList.remove('visible'); }
+  if(!/^[6-9]\d{9}$/.test(mobile)){ $id('mobile').classList.add('invalid'); $id('err_mobile').classList.add('visible'); ok=false; } else { $id('mobile').classList.remove('invalid'); $id('err_mobile').classList.remove('visible'); }
+  if(!dob){ $id('dob').classList.add('invalid'); $id('err_dob').classList.add('visible'); ok=false; } else { $id('dob').classList.remove('invalid'); $id('err_dob').classList.remove('visible'); }
+  if(!gender){ $id('gender').classList.add('invalid'); $id('err_gender').classList.add('visible'); ok=false; } else { $id('gender').classList.remove('invalid'); $id('err_gender').classList.remove('visible'); }
+  if(!city){ $id('city').classList.add('invalid'); $id('err_city').classList.add('visible'); ok=false; } else { $id('city').classList.remove('invalid'); $id('err_city').classList.remove('visible'); }
+
+  // validate visible fields that have data-required attribute
+  var sections = ['salarySection','businessSection','houseSection','capitalSection','otherSection'];
+  sections.forEach(function(secId){
+    var secEl = $id(secId);
+    if(!secEl) return;
+    if(secEl.style.display === 'none') return;
+    var reqs = secEl.querySelectorAll('[data-required]');
+    for(var i=0;i<reqs.length;i++){
+      var rf = reqs[i];
+      if(rf.offsetParent === null) continue; // not visible
+      var val = (rf.value||'').trim();
+      if(val === ''){
+        var err = $id('err_'+rf.id);
+        if(err) err.classList.add('visible');
+        rf.classList.add('invalid');
+        ok = false;
+      } else {
+        var err = $id('err_'+rf.id);
+        if(err) err.classList.remove('visible');
+        rf.classList.remove('invalid');
+      }
+    }
+  });
+
+  if(!ok){
+    $id('status').textContent = 'Fix highlighted errors and click Compute again.';
+    var firstInvalid = document.querySelector('.invalid');
+    if(firstInvalid) firstInvalid.focus();
+    return;
+  }
+
+  // proceed to compute tax (we'll keep calculations conservative and same as earlier file)
+  // Compute salary values by calling computeSalaryLive to populate grossA, totalExemptB, etc.
+  computeMonthlyTotals(); computeSalaryLive();
+
+  var regime = (document.querySelector('input[name="taxRegime"]:checked') || {value:'old'}).value;
+  var grossA_val = parseNum(($id('grossA').value || '').replace(/[₹,]/g,'')) || 0;
+  var totalExempt_val = parseNum(($id('totalExemptB').value || '').replace(/[₹,]/g,'')) || 0;
+  var salaryTaxable_AB = Math.max(0, grossA_val - totalExempt_val);
+
+  var businessNet = 0;
+  if($id('chk_business').checked){
+    businessNet = Math.max(0, parseNum($id('businessGross').value||0) - parseNum($id('businessExpenses').value||0));
+  }
+
+  var houseIncome = 0;
+  if($id('chk_house').checked){
+    var houseType = (document.querySelector('input[name="houseType"]:checked')||{}).value || 'self';
+    var interest = parseNum($id('hpInterest').value||0);
+    if(houseType === 'self'){ houseIncome = -Math.min(interest,200000); }
+    else {
+      var rent = parseNum($id('rentReceived').value||0); var municipal = parseNum($id('municipalTaxes').value||0);
+      var netRent = Math.max(0, rent - municipal); var stdDed = netRent * 0.30;
+      houseIncome = netRent - stdDed - interest;
+    }
+  }
+
+  var stcg = 0, ltcg = 0;
+  if($id('chk_capital').checked){ stcg = parseNum($id('stcg').value||0); ltcg = parseNum($id('ltcg').value||0); }
+
+  var other_total = 0;
+  if($id('chk_other').checked){ other_total = parseNum($id('interestIncome').value||0) + parseNum($id('dividendIncome').value||0) + parseNum($id('otherMisc').value||0); }
+
+  // Deductions 80C etc (kept same logic)
+  var sum80C=0;
+  ['c_lic','c_epf','c_ppf','c_nsc','c_fd','c_sukanya','c_elss','c_ulip','c_tuition','c_principal','c_80ccc','c_other80c'].forEach(function(id){ sum80C += parseNum($id(id) ? $id(id).value : 0); });
+  var allowed80C = Math.min(sum80C,150000);
+  var allowed80CCD1B = Math.min(parseNum($id('ccd1b') ? $id('ccd1b').value : 0),50000);
+  var ded80E = parseNum($id('ded80E') ? $id('ded80E').value : 0);
+
+  var healthSelf = parseNum($id('healthSelf') ? $id('healthSelf').value : 0);
+  var healthParents = 0; var parentsStatus = $id('parentsSenior') ? $id('parentsSenior').value : '';
+  if(parentsStatus !== 'na') healthParents = parseNum($id('healthParents') ? $id('healthParents').value : 0);
+  var parentsSenior = parentsStatus === 'yes';
+  var preventive = Math.min(parseNum($id('preventive') ? $id('preventive').value : 0),5000);
+  var allowedSelf = Math.min(healthSelf,25000), allowedParents = Math.min(healthParents, parentsSenior?50000:25000);
+  var remainingPreventive = preventive;
+  var selfRoom = Math.max(0,25000 - allowedSelf);
+  var toSelf = Math.min(selfRoom, remainingPreventive); allowedSelf += toSelf; remainingPreventive -= toSelf;
+  if(remainingPreventive>0){ var parentRoom = Math.max(0,(parentsSenior?50000:25000)-allowedParents); var toParents = Math.min(parentRoom, remainingPreventive); allowedParents += toParents; remainingPreventive -= toParents; }
+  var allowed80D = allowedSelf + allowedParents;
+
+  var ded80G = parseNum($id('ded80G') ? $id('ded80G').value : 0);
+  var ded80GGC = parseNum($id('ded80GGC') ? $id('ded80GGC').value : 0);
+  var ded80TTA = parseNum($id('ded80TTA') ? $id('ded80TTA').value : 0);
+  var ded80TTB = parseNum($id('ded80TTB') ? $id('ded80TTB').value : 0);
+  var allowed80TTA=0, allowed80TTB=0;
+  var age = parseNum($id('age') ? $id('age').value : 0);
+  if(age>=60) allowed80TTB = Math.min(ded80TTB,50000); else allowed80TTA = Math.min(ded80TTA,10000);
+
+  var totalDeductions = 0;
+  if(regime === 'old'){
+    totalDeductions = allowed80C + allowed80CCD1B + allowed80D + ded80E + ded80G + ded80GGC + allowed80TTA + allowed80TTB;
+  }
+
+  var ordinaryGross = salaryTaxable_AB + businessNet + houseIncome + other_total;
+  var taxableOrdinary = Math.max(0, ordinaryGross - totalDeductions);
+
+  // simple tax calc
+  function computeTaxOld(taxable){
+    var tax = 0;
+    if(taxable<=250000) return 0;
+    if(taxable>250000 && taxable<=500000) tax += (taxable - 250000)*0.05;
+    if(taxable>500000 && taxable<=1000000){ tax += (500000-250000)*0.05; tax += (taxable - 500000)*0.20; }
+    if(taxable>1000000){ tax += (500000-250000)*0.05; tax += (1000000-500000)*0.20; tax += (taxable - 1000000)*0.30; }
+    return tax;
+  }
+  function computeTaxNew(taxable){
+    var tax = 0;
+    if(taxable<=300000) return 0;
+    if(taxable>300000 && taxable<=700000) tax += (taxable - 300000)*0.05;
+    if(taxable>700000 && taxable<=1000000){ tax += (700000-300000)*0.05; tax += (taxable - 700000)*0.10; }
+    if(taxable>1000000 && taxable<=1200000){ tax += (700000-300000)*0.05; tax += (1000000-700000)*0.10; tax += (taxable - 1000000)*0.15; }
+    if(taxable>1200000 && taxable<=1500000){ tax += (700000-300000)*0.05; tax += (1000000-700000)*0.10; tax += (1200000-1000000)*0.15; tax += (taxable - 1200000)*0.20; }
+    if(taxable>1500000){ tax += (700000-300000)*0.05; tax += (1000000-700000)*0.10; tax += (1200000-1000000)*0.15; tax += (1500000-1200000)*0.20; tax += (taxable - 1500000)*0.30; }
+    return tax;
+  }
+  var stcgTax = stcg * 0.20;
+  var ltcgTax = Math.max(0, ltcg - 125000) * 0.125;
+  var taxOnOrdinary = (regime === 'old') ? computeTaxOld(taxableOrdinary) : computeTaxNew(taxableOrdinary);
+  var taxBeforeCess = taxOnOrdinary + stcgTax + ltcgTax;
+  var rebate = (taxableOrdinary <= 500000) ? Math.min(25000, taxBeforeCess) : 0;
+  taxBeforeCess = Math.max(0, taxBeforeCess - rebate);
+  var cess = taxBeforeCess * 0.04;
+  var totalTax = Math.max(0, taxBeforeCess + cess);
+
+  // Render modal content
+  var incomeRows = '<table class="result-table"><tr><th>Income Head</th><th>Amount (₹)</th></tr>';
+  if($id('chk_salary').checked){
+    incomeRows += '<tr><td>Gross Salary — A</td><td class="amount">' + fmtINR(grossA_val) + '</td></tr>';
+    incomeRows += '<tr><td>Total Exemptions — B</td><td class="amount">' + fmtINR(totalExempt_val) + '</td></tr>';
+    incomeRows += '<tr><td><strong>Taxable Salary (A − B)</strong></td><td class="amount"><strong>' + fmtINR(salaryTaxable_AB) + '</strong></td></tr>';
+  }
+  if($id('chk_business').checked) incomeRows += '<tr><td>Business / Profession — Net</td><td class="amount">' + fmtINR(businessNet) + '</td></tr>';
+  if($id('chk_house').checked) incomeRows += '<tr><td>House property (net)</td><td class="amount">' + fmtINR(houseIncome) + '</td></tr>';
+  if($id('chk_other').checked) incomeRows += '<tr><td>Other income (total)</td><td class="amount">' + fmtINR(other_total) + '</td></tr>';
+  if($id('chk_capital').checked){ incomeRows += '<tr><td>STCG</td><td class="amount">' + fmtINR(stcg) + '</td></tr>'; incomeRows += '<tr><td>LTCG</td><td class="amount">' + fmtINR(ltcg) + '</td></tr>'; }
+  incomeRows += '</table>';
+
+  var dedRows = '<table class="result-table"><tr><th>Deduction</th><th>Amount (₹)</th></tr>';
+  if(allowed80C>0) dedRows += '<tr><td>80C (allowed)</td><td class="amount">' + fmtINR(allowed80C) + '</td></tr>';
+  if(allowed80CCD1B>0) dedRows += '<tr><td>80CCD(1B)</td><td class="amount">' + fmtINR(allowed80CCD1B) + '</td></tr>';
+  if(allowed80D>0) dedRows += '<tr><td>80D (allowed)</td><td class="amount">' + fmtINR(allowed80D) + '</td></tr>';
+  if(allowed80TTA>0) dedRows += '<tr><td>80TTA</td><td class="amount">' + fmtINR(allowed80TTA) + '</td></tr>';
+  if(allowed80TTB>0) dedRows += '<tr><td>80TTB</td><td class="amount">' + fmtINR(allowed80TTB) + '</td></tr>';
+  dedRows += '<tr><td style="font-weight:800">Total deductions applied</td><td class="amount" style="font-weight:800">' + fmtINR(totalDeductions) + '</td></tr></table>';
+
+  $id('modalSummary').innerHTML = '<div style="font-weight:700;margin-bottom:8px">Client: ' + $id('fullName').value + ' — Regime: ' + (regime==='old'?'Old':'New') + '</div>' + incomeRows + '<div style="margin-top:12px;font-weight:700">Deductions</div>' + dedRows;
+
+  $id('modalCalculation').innerHTML = '<div style="font-weight:700">Tax Computation</div><table class="result-table">' +
+    '<tr><td>Taxable ordinary income</td><td class="amount">' + fmtINR(taxableOrdinary) + '</td></tr>' +
+    '<tr><td>Tax on ordinary income</td><td class="amount">' + fmtINR(taxOnOrdinary) + '</td></tr>' +
+    '<tr><td>Tax on STCG</td><td class="amount">' + fmtINR(stcgTax) + '</td></tr>' +
+    '<tr><td>Tax on LTCG</td><td class="amount">' + fmtINR(ltcgTax) + '</td></tr>' +
+    '<tr><td>Rebate (87A)</td><td class="amount">' + fmtINR(rebate) + '</td></tr>' +
+    '<tr><td>Cess (4%)</td><td class="amount">' + fmtINR(cess) + '</td></tr>' +
+    '<tr><td style="font-weight:800">Total estimated tax payable</td><td class="amount" style="font-weight:800">' + fmtINR(totalTax) + '</td></tr>' +
+    '</table>';
+
+  var recs = '<div style="font-weight:700">Advisor recommendations</div><div style="background:#fffaf0;padding:10px;border-radius:6px;margin-top:8px"><ul style="margin-left:18px">';
+  var remaining80C = Math.max(0,150000 - sum80C);
+  if(remaining80C>0) recs += '<li>80C room available: ' + fmtINR(remaining80C) + ' — consider ELSS / PPF / EPF contributions.</li>';
+  var selfRoom = Math.max(0,25000 - Math.min(parseNum($id('healthSelf')? $id('healthSelf').value : 0),25000));
+  if(selfRoom>0) recs += '<li>80D (self) potential room: ' + fmtINR(selfRoom) + ' — consider mediclaim top-up.</li>';
+  if(parentsStatus !== 'na'){ var parentsProvided = parseNum($id('healthParents')? $id('healthParents').value : 0); var parentCap = (parentsSenior?50000:25000); var parentRoom = Math.max(0,parentCap - Math.min(parentsProvided,parentCap)); if(parentRoom>0) recs += '<li>80D (parents) potential room: ' + fmtINR(parentRoom) + '.</li>'; }
+  recs += '</ul></div>';
+  $id('modalRecommendations').innerHTML = recs;
+
+  $id('advisorJSON').value = JSON.stringify({
+    client:{name:$id('fullName').value,email:$id('email').value,mobile:$id('mobile').value},
+    incomes:{grossA:grossA_val,totalExempt:totalExempt_val,salaryTaxable_AB:salaryTaxable_AB,businessNet:businessNet,houseIncome:houseIncome,other_total:other_total,stcg:stcg,ltcg:ltcg},
+    deductions:{allowed80C:allowed80C,allowed80CCD1B:allowed80CCD1B,allowed80D:allowed80D,allowed80TTA:allowed80TTA,allowed80TTB:allowed80TTB},
+    tax:{taxableOrdinary:taxableOrdinary,taxOnOrdinary:taxOnOrdinary,stcgTax:stcgTax,ltcgTax:ltcgTax,rebate:rebate,cess:cess,totalTax:totalTax}
+  }, null, 2);
+
+  // show modal
+  $id('resultModal').style.display = 'flex';
+  $id('status').textContent = 'Computation complete — modal displayed.';
+});
+
+/* modal close & download */
+$id('closeModalBtn').addEventListener('click', function(){ $id('resultModal').style.display = 'none'; });
+$id('downloadPdfBtn').addEventListener('click', function(){
+  var printableHtml = '<html><head><meta charset="utf-8"/><title>Tax Estimate</title><style>body{font-family:Inter,Arial;padding:18px;color:#111}table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ddd;text-align:left}th{background:#f1f5f9}</style></head><body><h1>Tax Estimate</h1>' + $id('modalSummary').innerHTML + $id('modalCalculation').innerHTML + $id('modalRecommendations').innerHTML + '<p style="font-size:12px;color:#444;margin-top:12px">Disclaimer: This is an estimate. Reconcile with Form 16 / ITR schedules before filing.</p></body></html>';
+  var w = window.open('', '_blank'); if(!w){ alert('Popup blocked — allow popups to print/save PDF.'); return; }
+  w.document.open(); w.document.write(printableHtml); w.document.close(); setTimeout(function(){ w.print(); }, 400);
+});
+
+/* attach input listeners to recompute salary when relevant fields change */
+var autoFields = ['basic_monthly','da_monthly','hra_monthly','conveyance_monthly','special_allow_monthly','other_allow_monthly','perquisites_annual','rent_monthly','rent_monthly_master','lta_exempt','other_exempts','cityTypeSalary'];
+autoFields.forEach(function(id){ var el = $id(id); if(el) el.addEventListener('input', computeSalaryLive); });
+
+/* when salaryModeToggle toggles, show/hide monthly/uniform sections */
+$id('salaryModeToggle').addEventListener('change', function(){
+  if(this.checked){ $id('monthlyBreakSection').style.display='block'; $id('uniformMonthlySection').style.display='none'; }
+  else { $id('monthlyBreakSection').style.display='none'; $id('uniformMonthlySection').style.display='block'; }
+  computeMonthlyTotals();
+});
+
+/* when page loads compute initial values */
+computeMonthlyTotals();
+computeSalaryLive();
+updateDeductionVisibility();
+
+})(); /* end IIFE */
+</script>
+</body>
+</html>

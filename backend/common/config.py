@@ -20,6 +20,16 @@ AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
 USER_SERVICE_URL = os.getenv("USER_SERVICE_URL", "http://localhost:8002")
 SUBSCRIPTION_SERVICE_URL = os.getenv("SUBSCRIPTION_SERVICE_URL", "http://localhost:8003")
 PAYMENT_SERVICE_URL = os.getenv("PAYMENT_SERVICE_URL", "http://localhost:8004")
+CALCULATION_SERVICE_URL = os.getenv("CALCULATION_SERVICE_URL", "http://localhost:8005")
+REPORT_SERVICE_URL = os.getenv("REPORT_SERVICE_URL", "http://localhost:8006")
+# Newly added service URLs for remaining services
+FORM_SERVICE_URL = os.getenv("FORM_SERVICE_URL", "http://localhost:8007")
+AFFILIATE_SERVICE_URL = os.getenv("AFFILIATE_SERVICE_URL", "http://localhost:8008")
+ADMIN_SERVICE_URL = os.getenv("ADMIN_SERVICE_URL", "http://localhost:8009")
+NOTIFICATION_SERVICE_URL = os.getenv("NOTIFICATION_SERVICE_URL", "http://localhost:8010")
+STORAGE_SERVICE_URL = os.getenv("STORAGE_SERVICE_URL", "http://localhost:8011")
+I18N_SERVICE_URL = os.getenv("I18N_SERVICE_URL", "http://localhost:8012")
+PRO_SERVICE_URL = os.getenv("PRO_SERVICE_URL", "http://localhost:8013")
 
 
 def mysql_url() -> str:
