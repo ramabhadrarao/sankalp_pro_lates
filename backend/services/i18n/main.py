@@ -16,6 +16,9 @@ from .schemas import (
     TranslateResponse,
     StringResponse,
     UpsertTranslationRequest,
+    LanguageCreateRequest,
+    TranslationListItem,
+    TranslationListResponse,
 )
 
 app = FastAPI(title="I18N Service", version="1.0.0")
@@ -23,18 +26,14 @@ router = APIRouter(prefix="/api/v1")
 
 Base.metadata.create_all(bind=engine)
 
+# Auth dependencies
 
-def require_auth(authorization: str = Header(None), db: Session = Depends(get_session)) -> User:
+def require_auth(authorization: str = Header(None)) -> User:
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Unauthorized")
     token = authorization.split(" ", 1)[1]
     payload = decode_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    user_id = payload.get("sub")
-    user = db.get(User, user_id)
-    if not user or not user.active:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    user = User(id=payload.get("sub"), email=payload.get("email"), role=payload.get("role", "user"))
     return user
 
 

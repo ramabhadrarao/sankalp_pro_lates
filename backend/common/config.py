@@ -1,4 +1,5 @@
 import os
+from urllib.parse import quote_plus
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -33,4 +34,5 @@ PRO_SERVICE_URL = os.getenv("PRO_SERVICE_URL", "http://localhost:8013")
 
 
 def mysql_url() -> str:
-    return f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
+    encoded_password = quote_plus(MYSQL_PASSWORD)
+    return f"mysql+pymysql://{MYSQL_USER}:{encoded_password}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"

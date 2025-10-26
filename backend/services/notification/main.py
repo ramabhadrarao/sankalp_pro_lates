@@ -16,6 +16,7 @@ from .schemas import (
     TemplatesResponse,
     TemplateItem,
     TemplateUpdateRequest,
+    TemplateCreateRequest,
     TestEmailRequest,
     QueueResponse,
     QueueItem,
