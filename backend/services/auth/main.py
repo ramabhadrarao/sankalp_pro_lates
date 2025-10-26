@@ -194,7 +194,6 @@ def mfa_setup(current_user: UserResponse = Depends(get_current_user), db: Sessio
     # generate secret
     secret = pyotp.random_base32()
     # Save secret; do not enable until verified
-    user = db.get(type("UserProxy", (), {})(), current_user.id)  # placeholder not used
     # direct fetch real user
     from services.auth.models import User
     user = db.get(User, current_user.id)
