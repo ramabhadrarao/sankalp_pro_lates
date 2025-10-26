@@ -36,7 +36,8 @@ async def proxy(request: Request, target_base: str, path: str):
 
 @app.api_route("/api/v1/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_auth(path: str, request: Request):
-    return await proxy(request, AUTH_SERVICE_URL, f"api/v1/{path}")
+    # Forward to service's /auth/... endpoints
+    return await proxy(request, AUTH_SERVICE_URL, f"api/v1/auth/{path}")
 
 @app.api_route("/api/v1/users/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_users(path: str, request: Request):

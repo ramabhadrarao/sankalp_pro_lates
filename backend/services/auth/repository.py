@@ -7,7 +7,8 @@ from secrets import token_urlsafe
 from common.config import REFRESH_EXPIRES_MINUTES
 from .models import User, RefreshToken, EmailVerification, PasswordResetToken
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use a hashing scheme that avoids bcrypt backend issues
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 def get_user_by_email(db: Session, email: str) -> User | None:
     stmt = select(User).where(User.email == email)
